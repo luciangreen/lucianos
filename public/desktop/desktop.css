@@ -38,7 +38,7 @@ body.desktop-page input, body.desktop-page textarea, .calcresult, .zones .mono {
 .icon.selected { background: color-mix(in srgb, var(--accent) 18%, transparent); }
 .icon.selected .label { background: var(--accent); color: #fff; }
 .icon:focus-visible { box-shadow: 0 0 0 2px var(--accent); }
-.icon.dragging { opacity: 0.75; pointer-events: none; z-index: 99999; }
+.icon.dragging { opacity: 0.35; pointer-events: none; }
 .icon[data-kind='app'] .label { font-weight: 600; }
 .icon .renamer { width: 100%; font-size: 12.5px; min-height: 24px; padding: 0 4px; text-align: center; }
 body.dragging-icons .iconsbox, body.dragging-icons .desktop-icons { cursor: copy; }
@@ -154,6 +154,12 @@ body.dragging-window iframe { pointer-events: none; }
 .progout { flex: 1; min-height: 120px; max-height: none; }
 
 /* copying (⌥-drag) and dropping files on iEdit */
-body.dragging-icons.copying .icon.dragging::after { content: '+'; position: absolute; top: 2px; right: 14px; width: 20px; height: 20px; border-radius: 50%; background: #2a8a4a; color: white; font: 700 16px/20px system-ui; text-align: center; }
 body.dragging-icons:not(.copying) .iconsbox, body.dragging-icons:not(.copying) .desktop-icons { cursor: grabbing; }
 .win.drop-into { outline: 3px solid var(--accent); outline-offset: -1px; }
+
+/* icons being dragged float above every window */
+.drag-ghost { position: fixed; inset: 0; pointer-events: none; z-index: 100000; }
+.drag-ghost .icon { position: fixed; margin: 0; opacity: 0.9; }
+.drag-badge { position: fixed; padding: 3px 9px; border-radius: 999px; background: var(--panel); color: var(--ink); border: 1px solid var(--line); font: 600 12px system-ui; white-space: nowrap; box-shadow: 0 2px 8px rgb(0 0 0 / 20%); }
+.drag-badge.copy { background: #2a8a4a; color: white; border-color: #2a8a4a; }
+.drag-badge.iedit { background: var(--accent); color: white; border-color: var(--accent); }

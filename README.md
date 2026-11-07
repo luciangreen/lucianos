@@ -10,13 +10,15 @@ LucianOS is a web desktop that runs on your Mac. You can reach it from the Mac, 
   - Drag icons to arrange them; their places are remembered.
   - Drop icons on a folder, or on a folder window, to move the files there.
   - **Copying:**
-    - Hold **⌥ Option** (Alt) while you drop to copy instead of moving; a green + shows on the icons.
+    - Hold **⌥ Option** (Alt) while you drop to copy instead of moving. A badge by the pointer says **Move** or **＋ Copy**.
+    - **Edit ▸ Dragging copies** makes every drag copy until you turn it off: handy on a touch screen, which has no Option key.
     - ⌥-dropping in the same place duplicates.
     - **Edit ▸ Copy** and **Edit ▸ Paste** (⌘C, ⌘V) copy files into the front folder window, or onto the desktop.
     - **Edit ▸ Duplicate** (⌘D) copies files where they are.
     - A name already taken gets " copy" added, as in the Finder: `notes copy.txt`, then `notes copy 2.txt`.
   - **Drop files on an iEdit window** to put their contents into it.
-    - The window you're over is outlined, and its cursor shows where the text will go.
+    - Dragged icons float above every window, and the badge says **Put into iEdit**. The window you're over is outlined, and its cursor shows where the text will go.
+    - If iEdit doesn't take the files, LucianOS says so. That usually means iEdit needs updating: run `git pull` in `lucianos/apps/iedit`.
     - The text goes in as whole lines, at the line you drop on.
     - Several files go in one after another.
     - It's one step that ⌘Z undoes, and the files themselves stay where they are.

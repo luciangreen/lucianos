@@ -3,7 +3,7 @@ import { api } from '/shared/api.js';
 import { $, el } from './dom.js';
 import { COMMON_ZONES, convertTime, evaluate, looksLikeSum } from './calc.js';
 import { appInfo, displayName, glyphFor, kindOf, makeUrlFile, parseUrlFile, safeUrl } from './filetypes.js';
-import { IconView, clearSelection, clipboardCount, copyEntries, copySelection, currentSelection, pasteInto, refreshFolder } from './icons.js';
+import { IconView, clearSelection, clipboardCount, copyEntries, copySelection, currentSelection, dragCopiesOn, pasteInto, refreshFolder, setDragCopies } from './icons.js';
 import { activeWindow, createWindow, renderTabs, setOnChange, windows } from './wm.js';
 import { mountCharacter } from '/shared/character/character.js';
 import { bestMatch, parseCommand } from '/shared/character/commands.js';
@@ -575,7 +575,8 @@ function buildMenus() {
     null,
     { label: 'Select all', key: `${MOD}A`, action: () => { const w = activeWindow(); (w?.kind === 'folder' ? w.view : desktopView).selectAll(); } },
     null,
-    { label: 'Tip: hold ⌥ Option while dragging to copy, or drop files on iEdit to insert them', action: () => {} }
+    { label: `${dragCopiesOn() ? '✓ ' : ''}Dragging copies`, key: '⌥ drag', action: () => { setDragCopies(!dragCopiesOn()); state.dragCopies = dragCopiesOn(); saveState(); buildMenus(); notice(dragCopiesOn() ? 'Dragging now copies. Turn it off in the Edit menu.' : 'Dragging moves again (hold ⌥ Option to copy).'); } },
+    { label: 'Tip: drop files on an iEdit window to put them in', action: () => {} }
   ]);
   buildGoMenu();
   buildMenu('apps', info.apps.length ? info.apps.map((id) => ({ label: `${appInfo(id).glyph}  ${appInfo(id).name}`, action: () => openApp(id) }))
@@ -798,6 +799,7 @@ async function init() {
     const home = await api.files.list('');
     state.desktopFolder = home.entries.some((e) => e.type === 'dir' && e.name === 'Desktop') ? 'Desktop' : '';
   }
+  setDragCopies(state.dragCopies);
   buildMenus();
   tick();
   setInterval(tick, 15000);

@@ -70,6 +70,19 @@ export function pasteInto(folder, onError) {
   return copyEntries(clipboard, folder, onError);
 }
 
+// Copy instead of move: ⌥ Option (Alt) held, seen on the pointer event or the keyboard,
+// or the "Dragging copies" setting (for touch screens, which have no Option key).
+let altDown = false;
+addEventListener('keydown', (e) => { if (e.key === 'Alt') altDown = true; });
+addEventListener('keyup', (e) => { if (e.key === 'Alt') altDown = false; });
+addEventListener('blur', () => (altDown = false));
+let dragCopies = false;
+export function setDragCopies(on) {
+  dragCopies = !!on;
+}
+export const dragCopiesOn = () => dragCopies;
+const wantsCopy = (ev) => dragCopies || ev.altKey || altDown;
+
 // Dropping files on an iEdit window (an iframe of /apps/iedit/) hands their paths to iEdit.
 function ieditFrameAt(x, y) {
   const under = document.elementFromPoint(x, y);
@@ -185,6 +198,8 @@ export class IconView {
       }
       const start = { x: e.clientX, y: e.clientY };
       let moving = null;
+      let ghost = null;
+      let badge = null;
       node.setPointerCapture(e.pointerId);
       const move = (ev) => {
         const dx = ev.clientX - start.x;
@@ -192,12 +207,33 @@ export class IconView {
         if (!moving) {
           if (Math.hypot(dx, dy) < 6) return;
           moving = [...this.container.querySelectorAll('.icon.selected')];
+          // the dragged icons float above every window, as copies; the originals fade
+          ghost = el('div', { className: 'drag-ghost' });
+          for (const n of moving) {
+            const r = n.getBoundingClientRect();
+            const c = n.cloneNode(true);
+            c.classList.remove('selected');
+            c.classList.add('selected', 'ghost-icon');
+            c.style.left = `${r.left}px`;
+            c.style.top = `${r.top}px`;
+            c.style.width = `${r.width}px`;
+            ghost.append(c);
+          }
+          badge = el('div', { className: 'drag-badge' });
+          ghost.append(badge);
+          document.body.append(ghost);
           moving.forEach((n) => n.classList.add('dragging'));
           document.body.classList.add('dragging-icons');
         }
-        for (const n of moving) n.style.transform = `translate(${dx}px, ${dy}px)`;
-        document.body.classList.toggle('copying', ev.altKey);
-        document.body.classList.toggle('into-iedit', dragOverIedit(ev.clientX, ev.clientY));
+        ghost.style.transform = `translate(${dx}px, ${dy}px)`;
+        badge.style.left = `${start.x + 14}px`;
+        badge.style.top = `${start.y + 14}px`;
+        const intoIedit = dragOverIedit(ev.clientX, ev.clientY);
+        const copying = !intoIedit && wantsCopy(ev);
+        document.body.classList.toggle('copying', copying);
+        document.body.classList.toggle('into-iedit', intoIedit);
+        badge.textContent = intoIedit ? '📝 Put into iEdit' : copying ? '＋ Copy' : 'Move';
+        badge.className = `drag-badge${intoIedit ? ' iedit' : copying ? ' copy' : ''}`;
       };
       const up = async (ev) => {
         node.removeEventListener('pointermove', move);
@@ -206,13 +242,12 @@ export class IconView {
         if (!moving) return;
         document.body.classList.remove('dragging-icons', 'copying', 'into-iedit');
         dragOverIedit(-1, -1);
+        ghost.remove();
         const dx = ev.clientX - start.x;
         const dy = ev.clientY - start.y;
-        for (const n of moving) {
-          n.classList.remove('dragging');
-          n.style.transform = '';
-        }
-        await this.drop(ev.clientX, ev.clientY, moving.map((n) => n.dataset.key), dx, dy, { copy: ev.altKey });
+        for (const n of moving) n.classList.remove('dragging');
+        if (ev.type === 'pointercancel') return;
+        await this.drop(ev.clientX, ev.clientY, moving.map((n) => n.dataset.key), dx, dy, { copy: wantsCopy(ev) });
       };
       node.addEventListener('pointermove', move);
       node.addEventListener('pointerup', up);
@@ -228,7 +263,20 @@ export class IconView {
       const paths = moved.filter((e) => e.type === 'file').map((e) => e.path);
       if (!paths.length) return this.onError('Only files can go into iEdit: drop a file, not a folder or app.');
       const r = frame.getBoundingClientRect();
-      frame.contentWindow.postMessage({ type: 'iedit.insertFiles', paths, x: x - r.left, y: y - r.top }, location.origin);
+      const win = frame.contentWindow;
+      // iEdit answers iedit.inserted; an older iEdit says nothing
+      const heard = new Promise((resolve) => {
+        const on = (e) => {
+          if (e.source === win && e.data?.type === 'iedit.inserted') {
+            removeEventListener('message', on);
+            resolve(true);
+          }
+        };
+        addEventListener('message', on);
+        setTimeout(() => { removeEventListener('message', on); resolve(false); }, 2500);
+      });
+      win.postMessage({ type: 'iedit.insertFiles', paths, x: x - r.left, y: y - r.top }, location.origin);
+      if (!(await heard)) this.onError("iEdit didn't take the files. It may be an older version: run git pull in lucianos/apps/iedit, then reload this page.");
       return;
     }
     const folderIcon = under?.closest('.icon[data-kind="dir"]');

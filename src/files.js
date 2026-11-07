@@ -34,12 +34,28 @@ async function statOr404(abs) {
   }
 }
 
+// Copies a file or folder, keeping modification times. Links are copied as links, so a
+// copy never reaches outside the suite folder. (Not fs.cp, which is experimental in some
+// Node versions and behaves differently between them.)
+async function copyTree(from, to) {
+  const st = await fsp.lstat(from);
+  if (st.isSymbolicLink()) {
+    await fsp.symlink(await fsp.readlink(from), to);
+  } else if (st.isDirectory()) {
+    await fsp.mkdir(to);
+    for (const name of await fsp.readdir(from)) await copyTree(path.join(from, name), path.join(to, name));
+  } else {
+    await fsp.copyFile(from, to, fs.constants.COPYFILE_EXCL);
+  }
+  if (!st.isSymbolicLink()) await fsp.utimes(to, st.atime, st.mtime).catch(() => {});
+}
+
 async function moveAcrossDevices(from, to) {
   try {
     await fsp.rename(from, to);
   } catch (err) {
     if (err.code !== 'EXDEV') throw err;
-    await fsp.cp(from, to, { recursive: true, preserveTimestamps: true });
+    await copyTree(from, to);
     await fsp.rm(from, { recursive: true, force: true });
   }
 }
@@ -150,7 +166,7 @@ export function fileRoutes(router, { sandbox, bus, cfg }) {
     if (fs.existsSync(dest)) throw new HttpError(409, 'Something with that name already exists');
     if (dest.startsWith(src + path.sep)) throw new HttpError(400, 'Cannot copy a folder inside itself');
     await fsp.mkdir(path.dirname(dest), { recursive: true });
-    await fsp.cp(src, dest, { recursive: true, preserveTimestamps: true, errorOnExist: true, force: false });
+    await copyTree(src, dest);
     const info = entryInfo(sandbox, dest, await fsp.stat(dest));
     bus.publish('file.created', { path: info.path });
     sendJson(res, 200, info);
