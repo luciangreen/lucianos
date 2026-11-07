@@ -2,6 +2,8 @@
 //   GET /api/github/stats?user=luciangreen -> { repos, stars, forks, pushedThisWeek, top: [...] }
 import { HttpError, sendJson } from './http-util.js';
 
+const brief = (r) => ({ name: r.name, description: r.description ?? '', language: r.language ?? '', stars: r.stargazers_count ?? 0, url: r.html_url, pushed: r.pushed_at });
+
 export function githubRoutes(router, cfg) {
   const base = cfg.githubApiUrl ?? 'https://api.github.com';
   let cache = { at: 0, user: '', data: null };
@@ -31,8 +33,8 @@ export function githubRoutes(router, cfg) {
       stars: repos.reduce((n, r) => n + (r.stargazers_count ?? 0), 0),
       forks: repos.reduce((n, r) => n + (r.forks_count ?? 0), 0),
       pushedThisWeek: repos.filter((r) => Date.parse(r.pushed_at) > week).length,
-      top: repos.slice().sort((a, b) => (b.stargazers_count ?? 0) - (a.stargazers_count ?? 0)).slice(0, 5).map((r) => ({ name: r.name, stars: r.stargazers_count ?? 0, url: r.html_url })),
-      recent: repos.filter((r) => Date.parse(r.pushed_at) > week).slice(0, 10).map((r) => r.name)
+      top: repos.slice().sort((a, b) => (b.stargazers_count ?? 0) - (a.stargazers_count ?? 0)).slice(0, 5).map(brief),
+      recent: repos.filter((r) => Date.parse(r.pushed_at) > week).sort((a, b) => Date.parse(b.pushed_at) - Date.parse(a.pushed_at)).slice(0, 10).map(brief)
     };
     cache = { at: Date.now(), user, data };
     sendJson(res, 200, data);

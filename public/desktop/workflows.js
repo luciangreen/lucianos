@@ -547,6 +547,13 @@ export function initWorkflows(ctx) {
     settingsWindow,
     runDaily,
     runGL,
+    runItem,
+    // run a checklist item by id (from the terminal's Today panel)
+    async runById(id) {
+      await load();
+      const item = st.items.find((i) => i.id === id);
+      if (item) return runItem(item);
+    },
     handleCommand,
     start() {
       morningQuestion();

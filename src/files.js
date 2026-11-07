@@ -169,6 +169,42 @@ export function fileRoutes(router, { sandbox, bus, cfg }) {
     sendJson(res, 200, { ok: true, trashedAs: path.basename(dest) });
   });
 
+  // GET /api/files/recent?path=folder&days=3&limit=200 — files changed lately, newest first.
+  router.get('/api/files/recent', async (req, res, { query }) => {
+    const start = sandbox.resolve(query.get('path') ?? '');
+    const days = Math.min(Math.max(Number(query.get('days')) || 3, 0.01), 365);
+    const limit = Math.min(Number(query.get('limit')) || 200, 2000);
+    const since = Date.now() - days * 86400000;
+    const found = [];
+    let visited = 0;
+    const stack = [[start, 0]];
+    while (stack.length && visited < 40000) {
+      const [dir, depth] = stack.pop();
+      let names;
+      try {
+        names = await fsp.readdir(dir, { withFileTypes: true });
+      } catch {
+        continue;
+      }
+      for (const d of names) {
+        if (d.name.startsWith('.') || SKIP_DIRS.has(d.name)) continue;
+        const abs = path.join(dir, d.name);
+        visited++;
+        if (d.isDirectory()) {
+          if (depth < 8) stack.push([abs, depth + 1]);
+          continue;
+        }
+        if (!d.isFile()) continue;
+        try {
+          const stat = await fsp.stat(abs);
+          if (stat.mtimeMs >= since) found.push(entryInfo(sandbox, abs, stat));
+        } catch {}
+      }
+    }
+    found.sort((a, b) => b.mtimeMs - a.mtimeMs);
+    sendJson(res, 200, { results: found.slice(0, limit), truncated: visited >= 40000 });
+  });
+
   // GET /api/files/search?q=word&path=folder&contents=1&regex=0&case=0
   router.get('/api/files/search', async (req, res, { query }) => {
     const q = query.get('q') ?? '';

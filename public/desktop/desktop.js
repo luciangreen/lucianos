@@ -558,6 +558,7 @@ function buildMenus() {
     { label: "🎵  Today's music", action: () => wf.musicWindow() },
     { label: '⚙  Workflow settings', action: () => wf.settingsWindow() },
     { label: '✳️  Claude settings', action: claudeWindow },
+    { label: '📋  Claude to-action list', action: () => openApp('touchscreenterminal', { today: 'claude' }) },
     null,
     { label: '🧮  Calculator', action: () => calculatorWindow() },
     { label: '🕒  Time converter', action: () => timeWindow() },
@@ -711,6 +712,10 @@ async function startCharacter() {
 
 // Apps in windows (e.g. the touchscreen terminal) ask the desktop to open things.
 addEventListener('message', (e) => {
+  if (e.origin === location.origin && e.data?.type === 'lucianos.workflow' && typeof e.data.id === 'string') {
+    wf.runById(e.data.id);
+    return;
+  }
   if (e.origin === location.origin && e.data?.type === 'lucianos.gl' && typeof e.data.topic === 'string') {
     wf.runGL(e.data.topic || null);
     return;

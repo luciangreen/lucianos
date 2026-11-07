@@ -315,3 +315,27 @@ describe('remote mode password', () => {
     await assert.rejects(startServer({ mode: 'remote', passwordHash: null }), /set-password/);
   });
 });
+
+test('recent files: newest first, within the days asked, skipping hidden folders', async () => {
+  const fs = await import('node:fs');
+  const path = await import('node:path');
+  const { startServer } = await import('./helpers.js');
+  const s = await startServer();
+  try {
+    fs.mkdirSync(path.join(s.root, 'a/b'), { recursive: true });
+    fs.mkdirSync(path.join(s.root, '.git'));
+    fs.writeFileSync(path.join(s.root, 'a/old.txt'), 'x');
+    const old = (Date.now() - 10 * 86400000) / 1000;
+    fs.utimesSync(path.join(s.root, 'a/old.txt'), old, old);
+    fs.writeFileSync(path.join(s.root, 'a/b/one.txt'), 'x');
+    fs.writeFileSync(path.join(s.root, '.git/HEAD'), 'x');
+    await new Promise((r) => setTimeout(r, 20));
+    fs.writeFileSync(path.join(s.root, 'a/two.txt'), 'x');
+    const r = await s.request('GET', '/api/files/recent?days=3');
+    assert.deepEqual(r.json.results.map((e) => e.path), ['a/two.txt', 'a/b/one.txt']);
+    const escape = await s.request('GET', '/api/files/recent?path=../');
+    assert.equal(escape.status, 403);
+  } finally {
+    await s.close();
+  }
+});

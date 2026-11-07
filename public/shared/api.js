@@ -151,6 +151,7 @@ export const api = {
     move: (from, to) => call('POST', '/api/files/move', { from, to }),
     copy: (from, to) => call('POST', '/api/files/copy', { from, to }),
     trash: (path) => call('POST', '/api/files/trash', { path }),
+    recent: (path = '', { days, limit } = {}) => call('GET', `/api/files/recent?${q({ path, days, limit })}`),
     search: (q2, opts = {}) =>
       call('GET', `/api/files/search?${q({ q: q2, path: opts.path, contents: opts.contents ? 1 : undefined, regex: opts.regex ? 1 : undefined, case: opts.caseSensitive ? 1 : undefined })}`),
     watch: (path, onChange, recursive = false) => {
@@ -179,6 +180,10 @@ export const api = {
       }
       return () => es.close();
     }
+  },
+
+  github: {
+    stats: (user) => call('GET', `/api/github/stats?${q({ user })}`)
   },
 
   state: {

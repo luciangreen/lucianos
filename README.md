@@ -90,6 +90,7 @@ LucianOS is a web desktop that runs on your Mac. You can reach it from the Mac, 
   - **Confirm:** on by default, so you see and approve every request before it's sent.
   - **Turn off and forget the key** removes the key.
   - Nothing goes to Claude unless you press a button that says so.
+- **Tools ▸ Claude to-action list** opens the touchscreen terminal's list of algorithm ideas, ready to send to Claude. The terminal's ⭐ Today panel also has your work hotspots, a word game and rewards.
 - **Windows** come back where you left them next time. On an iPhone, one window shows at a time with tabs to switch.
 
 The old platform check page is at `/check.html` (**LucianOS ▸ Platform check page**).
@@ -169,7 +170,7 @@ api.jobs.stream(job.id, { output: ({ text }) => console.log(text), end: (s) => c
 npm test
 ```
 
-There are 74 tests. They cover the Claude bridge (with a stand-in API: confirmation, monthly limit, temporary keys, the key never sent to the browser), predicted commands, finding programs in READMEs and making test files, many live streams sharing one connection, the workflow checklist (daily items, child uses, reminder times, the Grammar Logic goal), MIDI reading and key finding, file copies, the character's command grammar (spoken maths, fuzzy names), the calculator, durations and time zones, plus sandbox escapes, symlinks, save conflicts, trash, search, the command allowlist, shell-injection attempts, interrupt, input, temporary folders, the job queue, output streaming, the Prolog command line, state, events, the local-mode guards, password login and its rate limit.
+There are 76 tests. They cover the Claude bridge (with a stand-in API: confirmation, monthly limit, temporary keys, the key never sent to the browser), predicted commands, recently changed files, GitHub statistics (with a stand-in GitHub), finding programs in READMEs and making test files, many live streams sharing one connection, the workflow checklist (daily items, child uses, reminder times, the Grammar Logic goal), MIDI reading and key finding, file copies, the character's command grammar (spoken maths, fuzzy names), the calculator, durations and time zones, plus sandbox escapes, symlinks, save conflicts, trash, search, the command allowlist, shell-injection attempts, interrupt, input, temporary folders, the job queue, output streaming, the Prolog command line, state, events, the local-mode guards, password login and its rate limit.
 
 ## Adding the apps
 
@@ -189,4 +190,4 @@ For example, iEdit opens at http://localhost:4170/apps/iedit/. The platform repo
 
 ## Next
 
-Phase 6 is the intelligence layer: the Claude bridge, background diagnostics, test generation, full voice control, predicted commands, and the terminal's games and rewards. After that comes DanceStudio.
+Phase 7 is DanceStudio: the camera and cursor as a way to pick and run commands (Grammar Logic and others).
