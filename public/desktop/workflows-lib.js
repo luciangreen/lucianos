@@ -102,28 +102,27 @@ export function prologString(s) {
 }
 
 // ---------------------------------------------------------------- Grammar Logic and breasoning
-// These follow br_16k_args_algs in find_char_map.pl (private repo) exactly:
-//   As is 4*50, Br is As*80,
+// These use the calls in br_16k_args_algs in find_char_map.pl (private repo), with one word:
+//   As is 1, Br is As*80,
 //   grammar_logic_to_alg1(Essay_0,As,GL_out1), term_to_atom(GL_out1,GL_out2), string_atom(GL_out,GL_out2)
 //   (in Algorithm-Writer-with-Lists), then in Text-to-Breasonings:
 //   texttobr2(u,u,GL_out,Br,[auto,on]), texttobr(u,u,GL_out,u)
 // with the files find_char_map.pl gets through cgpt_combophil_analogy.pl:
 //   Text-to-Breasonings/text_to_breasonings.pl and Algorithm-Writer-with-Lists/grammar_logic_to_alg1.pl
 
-export const GL_AS = 4 * 50; // As
-export const BR = GL_AS * 80; // Br
+// Grammar Logic copies the first word of the topic (Essay_0) and adds 79 words to it, so the
+// file has 80 words; breasoning then breasons out that file (Br is As*80 = 80 words).
+export const GL_AS = 1; // As: one word
+export const BR = GL_AS * 80; // Br: the word and its 79
 
 // A Prolog string; unlike prologString, keeps new lines.
 export function prologText(s) {
   return `"${String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\r?\n/g, '\\n')}"`;
 }
 
-// Essay_03 in find_char_map.pl: the text on its own line, repeated ceiling(200/Words) times
-// (Prolog then truncates it to 200 words with truncate1).
-export function glEssay(topic) {
-  const text = String(topic).trim();
-  const words = Math.max(1, text.split(/[^\p{L}\p{N}]+/u).filter(Boolean).length);
-  return `${text}\n`.repeat(Math.ceil(200 / words));
+// Essay_0: the first word of the topic.
+export function firstWord(topic) {
+  return String(topic).trim().split(/[^\p{L}\p{N}'-]+/u).filter(Boolean)[0] ?? '';
 }
 
 // Loads the two files as one program, as cgpt_combophil_analogy.pl does, using absolute paths
@@ -146,9 +145,8 @@ export function loadGoal({ awl, t2b }) {
 export function glGoal(topic, folders) {
   return [
     loadGoal(folders),
-    `Essay_03 = ${prologText(glEssay(topic))}`,
-    'truncate1(string,Essay_03,200,Essay_0)',
-    'As is 4*50',
+    `Essay_0 = ${prologText(firstWord(topic))}`,
+    'As is 1',
     'grammar_logic_to_alg1(Essay_0,As,GL_out1)',
     'term_to_atom(GL_out1,GL_out2)',
     'string_atom(GL_out,GL_out2)',
@@ -163,7 +161,7 @@ export function breasonGoal(file, folders) {
     `atomic_list_concat([Root,'/',${prologText(file)}],GL_path)`,
     'read_file_to_string(GL_path,GL_text,[])',
     'split_string(GL_text,"","\\s\\t\\n\\r",[GL_out])',
-    'As is 4*50',
+    'As is 1',
     'Br is As*80',
     'texttobr2(u,u,GL_out,Br,[auto,on])',
     'texttobr(u,u,GL_out,u)'

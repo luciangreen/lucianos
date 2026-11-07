@@ -28,19 +28,20 @@ function run(label, spec, timeoutMs) {
 
 const gl = run(`Grammar Logic on "${topic}"`, { goal: glGoal(topic, s), cwd: s.awl }, 10 * 60000);
 const glOut = (gl.stdout ?? '').trim();
-if (gl.status !== 0 || !glOut) {
-  console.error('\nFAIL: Grammar Logic gave no output');
+const words = glOut.split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+if (gl.status !== 0 || words.length !== BR) {
+  console.error(`\nFAIL: Grammar Logic gave ${words.length} words, not ${BR}`);
   process.exit(1);
 }
 const file = `${s.glFolder}/${topic} check.txt`;
 fs.mkdirSync(path.join(root, s.glFolder), { recursive: true });
 fs.writeFileSync(path.join(root, file), glOut + '\n');
 console.log(`Loader written by Prolog:\n${fs.readFileSync(path.join(root, LOADER), 'utf8')}`);
-console.log(`\nPASS Grammar Logic: ${glOut.length} characters, saved as ${file}`);
+console.log(`\nPASS Grammar Logic: ${words.length} words (${words[0]} and 79 more), saved as ${file}`);
 
 const br = run(`Breasoning ${file} (Br = ${BR})`, { goal: breasonGoal(file, s), cwd: s.t2b }, Number(process.env.BR_TIMEOUT ?? 40 * 60000));
-if (br.status !== 0) {
-  console.error('\nFAIL: breasoning did not finish');
+if (br.status !== 0 || !(br.stdout ?? '').includes(`Number of words to breason out in file: ${BR}`)) {
+  console.error(`\nFAIL: breasoning did not finish breasoning ${BR} words`);
   process.exit(1);
 }
 console.log('\nPASS breasoning finished');
