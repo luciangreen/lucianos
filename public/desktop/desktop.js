@@ -6,7 +6,7 @@ import { appInfo, displayName, glyphFor, kindOf, makeUrlFile, parseUrlFile, safe
 import { IconView, clearSelection, currentSelection, refreshFolder } from './icons.js';
 import { activeWindow, createWindow, renderTabs, setOnChange, windows } from './wm.js';
 import { mountCharacter } from '/shared/character/character.js';
-import { bestMatch } from '/shared/character/commands.js';
+import { bestMatch, parseCommand } from '/shared/character/commands.js';
 import { midiStats, parseMidi } from '/shared/midi.js';
 import { initWorkflows } from './workflows.js';
 import { claudeSettings } from '/shared/claude.js';
@@ -702,6 +702,18 @@ async function handleCommand(cmd) {
   }
 }
 
+// Runs a sentence as if it had been said to the character (from DanceStudio and ?do=).
+async function doSentence(text) {
+  const cmd = parseCommand(String(text).slice(0, 300));
+  try {
+    const reply = await handleCommand(cmd);
+    if (reply) character ? character.say(reply) : notice(reply);
+    else if (reply === null) notice(`I don't know how to do "${text}".`);
+  } catch (err) {
+    showError(err.message);
+  }
+}
+
 async function startCharacter() {
   character = await mountCharacter({
     handle: handleCommand,
@@ -712,6 +724,14 @@ async function startCharacter() {
 
 // Apps in windows (e.g. the touchscreen terminal) ask the desktop to open things.
 addEventListener('message', (e) => {
+  if (e.origin === location.origin && e.data?.type === 'lucianos.do' && typeof e.data.text === 'string') {
+    doSentence(e.data.text);
+    return;
+  }
+  if (e.origin === location.origin && e.data?.type === 'lucianos.say' && typeof e.data.text === 'string') {
+    character?.say(e.data.text.slice(0, 400));
+    return;
+  }
   if (e.origin === location.origin && e.data?.type === 'lucianos.workflow' && typeof e.data.id === 'string') {
     wf.runById(e.data.id);
     return;
@@ -788,6 +808,8 @@ async function init() {
 
   const params = new URLSearchParams(location.search);
   if (params.get('gl')) characterReady.then(() => wf.runGL(params.get('gl')));
+  if (params.get('do')) characterReady.then(() => doSentence(params.get('do')));
+  if (params.get('workflow')) characterReady.then(() => wf.runById(params.get('workflow')));
   if (params.get('open')) openEntry({ type: 'file', path: params.get('open'), name: params.get('open').split('/').pop(), size: 0 });
 }
 

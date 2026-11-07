@@ -91,6 +91,7 @@ LucianOS is a web desktop that runs on your Mac. You can reach it from the Mac, 
   - **Turn off and forget the key** removes the key.
   - Nothing goes to Claude unless you press a button that says so.
 - **Tools ▸ Claude to-action list** opens the touchscreen terminal's list of algorithm ideas, ready to send to Claude. The terminal's ⭐ Today panel also has your work hotspots, a word game and rewards.
+- **DanceStudio** (💃) lets you choose commands by moving in front of the camera, or by holding the cursor on a tile. You build a sentence such as "grammar logic on meditation", and the desktop runs it as if you'd said it to the character. A link like `/?do=brainstorm time travel` does the same.
 - **Windows** come back where you left them next time. On an iPhone, one window shows at a time with tabs to switch.
 
 The old platform check page is at `/check.html` (**LucianOS ▸ Platform check page**).
@@ -190,4 +191,4 @@ For example, iEdit opens at http://localhost:4170/apps/iedit/. The platform repo
 
 ## Next
 
-Phase 7 is DanceStudio: the camera and cursor as a way to pick and run commands (Grammar Logic and others).
+All seven apps are built. Next: try them on your Mac and iPhone and tell me what to change.
