@@ -1,0 +1,39 @@
+name: Grammar Logic and breasoning
+
+# Runs the desktop's Grammar Logic and breasoning calls (from find_char_map.pl) against
+# the real repos in a GitHub-private2-style folder. Run it by hand, or when they change.
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - public/desktop/workflows-lib.js
+      - scripts/check-gl-breasoning.mjs
+      - .github/workflows/gl-breasoning.yml
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install SWI-Prolog
+        run: |
+          sudo apt-add-repository --yes ppa:swi-prolog/stable
+          sudo apt-get update
+          sudo apt-get install --yes swi-prolog-nox
+          swipl --version
+      - name: Check out the Prolog repos side by side
+        run: |
+          mkdir -p "$RUNNER_TEMP/root/Dropbox/GitHub-private2"
+          cd "$RUNNER_TEMP/root/Dropbox/GitHub-private2"
+          for r in Algorithm-Writer-with-Lists Text-to-Breasonings listprologinterpreter; do
+            git clone --depth 1 "https://github.com/luciangreen/$r"
+          done
+      - name: Grammar Logic, then breasoning
+        run: ROOT="$RUNNER_TEMP/root" node scripts/check-gl-breasoning.mjs meditation

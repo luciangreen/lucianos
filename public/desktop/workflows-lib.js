@@ -22,7 +22,6 @@ export const DEFAULT_SETTINGS = {
   music: 'Dropbox/GitHub-private2/Music-Composer',
   shortlist: 'Music/GarageBand shortlist',
   glFolder: 'LucianOS/gl',
-  glChars: 4000,
   glTimes: '10:00, 15:00',
   breasoningScript: ''
 };
@@ -102,10 +101,76 @@ export function prologString(s) {
   return `"${String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, ' ')}"`;
 }
 
-// Runs Grammar Logic on a topic and prints each part of the result on its own line.
-export function glGoal(topic, chars = 4000) {
-  const n = Math.max(100, Math.min(100000, Math.round(Number(chars) || 4000)));
-  return `grammar_logic_to_alg1(${prologString(topic)}, ${n}, R), term_to_atom(T, R), forall(member(X, T), (atomic(X) -> writeln(X) ; (term_to_atom(X, A), writeln(A))))`;
+// ---------------------------------------------------------------- Grammar Logic and breasoning
+// These follow br_16k_args_algs in find_char_map.pl (private repo) exactly:
+//   As is 4*50, Br is As*80,
+//   grammar_logic_to_alg1(Essay_0,As,GL_out1), term_to_atom(GL_out1,GL_out2), string_atom(GL_out,GL_out2)
+//   (in Algorithm-Writer-with-Lists), then in Text-to-Breasonings:
+//   texttobr2(u,u,GL_out,Br,[auto,on]), texttobr(u,u,GL_out,u)
+// with the files find_char_map.pl gets through cgpt_combophil_analogy.pl:
+//   Text-to-Breasonings/text_to_breasonings.pl and Algorithm-Writer-with-Lists/grammar_logic_to_alg1.pl
+
+export const GL_AS = 4 * 50; // As
+export const BR = GL_AS * 80; // Br
+
+// A Prolog string; unlike prologString, keeps new lines.
+export function prologText(s) {
+  return `"${String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\r?\n/g, '\\n')}"`;
+}
+
+// Essay_03 in find_char_map.pl: the text on its own line, repeated ceiling(200/Words) times
+// (Prolog then truncates it to 200 words with truncate1).
+export function glEssay(topic) {
+  const text = String(topic).trim();
+  const words = Math.max(1, text.split(/[^\p{L}\p{N}]+/u).filter(Boolean).length);
+  return `${text}\n`.repeat(Math.ceil(200 / words));
+}
+
+export function glGoal(topic) {
+  return [
+    `Essay_03 = ${prologText(glEssay(topic))}`,
+    'truncate1(string,Essay_03,200,Essay_0)',
+    'As is 4*50',
+    'grammar_logic_to_alg1(Essay_0,As,GL_out1)',
+    'term_to_atom(GL_out1,GL_out2)',
+    'string_atom(GL_out,GL_out2)',
+    'write(GL_out), nl'
+  ].join(', ');
+}
+
+// Breasons a Grammar Logic file (read as GL_out), run in Text-to-Breasonings.
+export function breasonGoal(fileFromT2b) {
+  return [
+    `read_file_to_string(${prologText(fileFromT2b)},GL_text,[])`,
+    'split_string(GL_text,"","\\s\\t\\n\\r",[GL_out])',
+    'As is 4*50',
+    'Br is As*80',
+    'texttobr2(u,u,GL_out,Br,[auto,on])',
+    'texttobr(u,u,GL_out,u)'
+  ].join(', ');
+}
+
+// A path from folder `from` to `to` (both inside the suite).
+export function relPath(from, to) {
+  const a = from.split('/').filter(Boolean);
+  const b = to.split('/').filter(Boolean);
+  let i = 0;
+  while (i < a.length && i < b.length && a[i] === b[i]) i++;
+  return [...Array(a.length - i).fill('..'), ...b.slice(i)].join('/') || '.';
+}
+
+// The loader LucianOS writes: one program that includes both files, as cgpt_combophil_analogy.pl does,
+// so shared files (truncate.pl, listprolog) are loaded once.
+export const LOADER = 'LucianOS/prolog/gl_and_breasoning.pl';
+export function loaderText({ awl, t2b }, loader = LOADER) {
+  const dir = loader.split('/').slice(0, -1).join('/');
+  return [
+    '% Written by LucianOS. Loads Grammar Logic and Text-to-Breasonings the way find_char_map.pl does',
+    '% (through cgpt_combophil_analogy.pl). Change the folders in Workflow settings, not here.',
+    `:-include('${relPath(dir, `${t2b}/text_to_breasonings.pl`)}').`,
+    `:-include('${relPath(dir, `${awl}/grammar_logic_to_alg1.pl`)}').`,
+    ''
+  ].join('\n');
 }
 
 export const slug = (s) => String(s).trim().replace(/[^\w -]+/g, '').replace(/\s+/g, ' ').slice(0, 60).trim() || 'untitled';

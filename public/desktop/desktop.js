@@ -683,11 +683,15 @@ async function handleCommand(cmd) {
       return n ? `I found ${n} match${n === 1 ? '' : 'es'} for ${cmd.query}. They're in the spotlight list.` : `Nothing called ${cmd.query}. I can search inside files too: press the last line in the list.`;
     }
     case 'breason': {
-      const lib = await api.files.list('LucianOS/shellrun').catch(() => ({ entries: [] }));
-      const script = bestMatch('breasoning', lib.entries.filter((e) => kindOf(e) === 'script'));
-      if (!script) return 'Make a Breasoning script in shellrun first. There is an example in the shellrun repo.';
-      openApp('shellrunscriptmaker', { open: script.path });
-      return `I've opened your breasoning script. It works on file.txt in Text-to-Breasonings, so put ${cmd.name} there, then press Run.`;
+      // a file here, or a Grammar Logic file (newest first), breasoned as find_char_map.pl does
+      const here = hereFolder();
+      const gl = 'LucianOS/gl';
+      const lists = await Promise.all([here, gl, `${gl}/finished`].map((f) => api.files.list(f).then((r) => r.entries.filter((e) => e.type === 'file' && /\.(txt|md)$/i.test(e.name)), () => [])));
+      const files = lists.flat().sort((a, b) => b.mtimeMs - a.mtimeMs);
+      const file = /^(it|that|this|the (latest|last|newest)( one| file)?|grammar logic)$/i.test(cmd.name) ? files.find((f) => f.path.startsWith(gl)) : bestMatch(cmd.name, files);
+      if (!file) return `I can't find ${cmd.name} here or in ${gl}.`;
+      wf.breason(file.path);
+      return `Breasoning ${file.name}. Its output is in the Breasoning window.`;
     }
     case 'brainstorm': {
       const safe = cmd.topic.replace(/[^\w -]+/g, '').trim().replace(/\s+/g, '-') || 'ideas';

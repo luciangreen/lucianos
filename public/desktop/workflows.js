@@ -5,7 +5,7 @@ import { midiStats, parseMidi, playMidi } from '/shared/midi.js';
 import { bestMatch } from '/shared/character/commands.js';
 import { el } from './dom.js';
 import {
-  DEFAULT_SETTINGS, KINDS, STATUSES, dailyToRun, dueReminder, glGoal, isFinished, isRecent, needsPerson,
+  DEFAULT_SETTINGS, KINDS, STATUSES, dailyToRun, dueReminder, glGoal, breasonGoal, loaderText, relPath, LOADER, isFinished, isRecent, needsPerson,
   newItem, ordered, parseTimes, slug, stamp, timeKey, today
 } from './workflows-lib.js';
 
@@ -141,13 +141,19 @@ export function initWorkflows(ctx) {
     }
     notice(`Grammar Logic on “${topic}”…`);
     say(`Running Grammar Logic on ${topic}.`);
-    const job = await api.jobs.prolog({ goal: glGoal(topic, s.glChars), consult: ['grammar_logic_to_alg.pl'], cwd: s.awl, label: `Grammar Logic: ${topic}` });
+    let job;
+    try {
+      job = await api.jobs.prolog({ goal: glGoal(topic), consult: [await writeLoader(s.awl)], cwd: s.awl, label: `Grammar Logic: ${topic}` });
+    } catch (err) {
+      return showError(`Grammar Logic couldn't start: ${err.message}`);
+    }
     let out = '';
     let err = '';
     api.jobs.stream(job.id, {
       output: ({ stream, text }) => (stream === 'stdout' ? (out += text) : (err += text)),
       end: async (j) => {
-        const lines = out.split('\n').map((l) => l.trim()).filter(Boolean);
+        const glOut = out.trim();
+        const lines = glOut ? [glOut] : [];
         if (j.status !== 'done' || !lines.length) {
           showError(`Grammar Logic didn't finish: ${(err || out || j.status).trim().split('\n').slice(-2).join(' ')}`);
           say("Grammar Logic didn't work this time. The message is at the top of the screen.");
@@ -157,7 +163,7 @@ export function initWorkflows(ctx) {
         await api.files.write(path, lines.join('\n') + '\n', { mkdirs: true });
         if (item) set(item, { lastFile: path });
         openApp('iedit', { open: path });
-        say(`Grammar Logic for ${topic} is open in iEdit: ${lines.length} lines. When you've finished it, I can breason it and save it.`);
+        say(`Grammar Logic for ${topic} is open in iEdit. When you've finished it, I can breason it and save it.`);
         afterGL(path, item);
       }
     });
@@ -170,25 +176,50 @@ export function initWorkflows(ctx) {
     ]);
   }
 
-  async function breasoningScript() {
-    if (st.settings.breasoningScript) return st.settings.breasoningScript;
-    const lib = await api.files.list(scriptsFolder).catch(() => ({ entries: [] }));
-    return bestMatch('breasoning', lib.entries.filter((e) => e.name.endsWith('.shellrun.json')))?.path ?? null;
+  // The loader file that includes Text-to-Breasonings and Grammar Logic as find_char_map.pl does.
+  // Returns its path from `cwd`, for consulting.
+  async function writeLoader(cwd) {
+    const s = st.settings;
+    for (const [dir, file, what] of [[s.t2b, 'text_to_breasonings.pl', 'Text-to-Breasonings'], [s.awl, 'grammar_logic_to_alg1.pl', 'Algorithm-Writer-with-Lists']]) {
+      const ok = await api.files.read(`${dir}/${file}`).then(() => true, () => false);
+      if (!ok) throw new Error(`can't find ${file} in ${dir}. Set the ${what} folder in Workflow settings.`);
+    }
+    await api.files.write(LOADER, loaderText(s), { mkdirs: true });
+    return relPath(cwd, LOADER);
   }
 
-  // Breasoning works on file.txt in Text-to-Breasonings (a temporary working file).
+  // Breasons a Grammar Logic file in Text-to-Breasonings:
+  // texttobr2(u,u,GL_out,Br,[auto,on]), texttobr(u,u,GL_out,u), with Br = 4*50*80.
   async function breason(path, item) {
-    const script = await breasoningScript();
-    if (!script) return showError(`No breasoning script found in ${scriptsFolder}. Copy examples/breasoning.shellrun.json from the shellrun repo there.`);
-    const { content } = await api.files.read(path);
+    const t2b = st.settings.t2b;
+    let job;
     try {
-      await api.files.write(`${st.settings.t2b}/file.txt`, content);
+      job = await api.jobs.prolog({ goal: breasonGoal(relPath(t2b, path)), consult: [await writeLoader(t2b)], cwd: t2b, label: `Breasoning: ${path.split('/').pop()}` });
     } catch (err) {
-      return showError(`Couldn't write ${st.settings.t2b}/file.txt: ${err.message}`);
+      return showError(`Breasoning couldn't start: ${err.message}`);
     }
-    openApp('shellrunscriptmaker', { open: script, run: '1' });
-    say('Breasoning has started in shellrun. It asks the thesis question first.');
-    prompt('Breasoning is running in shellrun. Save the finished Grammar Logic file?', [['Save finished copy…', () => saveFinished(path, item), true]]);
+    say('Breasoning has started.');
+    const out = el('pre', { className: 'output' });
+    const stop = el('button', { textContent: 'Stop', onclick: () => api.jobs.cancel(job.id) });
+    const state = el('span', { className: 'quiet', textContent: 'Running texttobr2 and texttobr…' });
+    createWindow({ kind: 'breasoning', title: `Breasoning: ${path.split('/').pop()}`, body: el('div', { className: 'progwin' }, el('div', { className: 'row' }, state, el('span', { className: 'spacer' }), stop), out), geometry: { x: 220, y: 100, w: 620, h: 380 }, data: {} });
+    api.jobs.stream(job.id, {
+      output: ({ stream, text }) => {
+        out.append(el('span', { className: stream, textContent: text }));
+        out.scrollTop = out.scrollHeight;
+      },
+      end: (j) => {
+        stop.disabled = true;
+        if (j.status === 'done') {
+          state.textContent = 'Finished.';
+          say('Breasoning is finished.');
+          prompt('Breasoning is finished. Save the finished Grammar Logic file?', [['Save finished copy…', () => saveFinished(path, item), true]]);
+        } else {
+          state.textContent = j.status === 'cancelled' ? 'Stopped.' : `Didn't finish (exit ${j.exitCode}).`;
+          if (j.status !== 'cancelled') say("Breasoning didn't finish. The output is in its window.");
+        }
+      }
+    });
   }
 
   async function saveFinished(path, item) {
@@ -381,9 +412,7 @@ export function initWorkflows(ctx) {
     const fields = [
       ['awl', 'Algorithm-Writer-with-Lists folder'],
       ['t2b', 'Text-to-Breasonings folder'],
-      ['breasoningScript', 'Breasoning script (blank: find it in LucianOS/shellrun)'],
       ['glFolder', 'Save Grammar Logic in'],
-      ['glChars', 'Grammar Logic length (characters of topic used)'],
       ['glTimes', 'Remind me about Grammar Logic at'],
       ['music', 'Music-Composer folder'],
       ['shortlist', 'Copy shortlisted songs to']
@@ -396,7 +425,7 @@ export function initWorkflows(ctx) {
     const win = createWindow({ kind: 'wfsettings', title: 'Workflow settings', body, geometry: { x: 120, y: 60, w: 560, h: 520 }, data: {} });
     body.addEventListener('submit', (e) => {
       e.preventDefault();
-      for (const [k] of fields) st.settings[k] = k === 'glChars' ? Number(inputs[k].value) || 4000 : inputs[k].value.trim();
+      for (const [k] of fields) st.settings[k] = inputs[k].value.trim();
       save();
       notice('Workflow settings saved', 'ok');
       win.close();
@@ -547,6 +576,7 @@ export function initWorkflows(ctx) {
     settingsWindow,
     runDaily,
     runGL,
+    breason,
     runItem,
     // run a checklist item by id (from the terminal's Today panel)
     async runById(id) {
