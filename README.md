@@ -224,6 +224,8 @@ If it says “No such file or directory”: run the ln -s command below.
 ln -s ~/Library/CloudStorage/Dropbox ~/Dropbox
 ```
 
+* Caveat: lucianos works on Safari, not Chrome, on my machine.
+
 ## Next
 
 All seven apps are built. Next: try them on your Mac and iPhone and tell me what to change.
