@@ -82,7 +82,15 @@ export class JobRunner {
       tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'lucianos-job-'));
       job.tempDir = tmp;
     }
-    const env = { ...process.env, ...job.env, LUCIANOS_JOB_ID: job.id };
+    const env = {
+      ...process.env,
+      ...job.env,
+      LUCIANOS_JOB_ID: job.id,
+      // App runners (e.g. shellrun) use these to apply the same rules to their own steps.
+      LUCIANOS_ROOT: this.cfg.root,
+      LUCIANOS_ALLOWED_COMMANDS: this.cfg.allowedCommands.join(','),
+      LUCIANOS_STACK_LIMIT: this.cfg.swiplStackLimit
+    };
     if (tmp) env.LUCIANOS_TMP = tmp;
     let child;
     try {

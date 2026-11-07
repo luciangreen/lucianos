@@ -51,7 +51,12 @@ export function createApp(cfg) {
       mode: cfg.mode,
       rootName: path.basename(cfg.root),
       allowedCommands: cfg.allowedCommands,
-      maxConcurrentJobs: cfg.maxConcurrentJobs
+      maxConcurrentJobs: cfg.maxConcurrentJobs,
+      swiplStackLimit: cfg.swiplStackLimit,
+      appsDir: APPS_DIR,
+      apps: fs.existsSync(APPS_DIR)
+        ? fs.readdirSync(APPS_DIR).filter((n) => fs.existsSync(path.join(APPS_DIR, n, 'index.html')))
+        : []
     });
   });
 

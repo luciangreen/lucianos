@@ -141,6 +141,14 @@ describe('job runner', () => {
     assert.ok(job.output.some((o) => o.stream === 'stderr' && o.text.includes('oops')));
   });
 
+  test('jobs receive the suite rules so app runners can apply them', async () => {
+    const r = await s.request('POST', '/api/jobs', {
+      body: { cmd: 'node', args: ['-e', 'console.log(process.env.LUCIANOS_ROOT + "|" + process.env.LUCIANOS_ALLOWED_COMMANDS)'] }
+    });
+    const job = await waitForJob(s, r.json.id);
+    assert.equal(outputText(job).trim(), `${s.root.startsWith('/') ? fs.realpathSync(s.root) : s.root}|node,echo,ls,swipl`);
+  });
+
   test('refuses commands not in the allowlist, and paths as commands', async () => {
     for (const cmd of ['rm', 'bash', '/bin/sh', '../node']) {
       const r = await s.request('POST', '/api/jobs', { body: { cmd, args: [] } });
