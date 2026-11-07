@@ -1,0 +1,10 @@
+{
+  "mode": "local",
+  "port": 4170,
+  "root": "~",
+  "dataDir": "~/.lucianos",
+  "secureCookie": false,
+  "maxConcurrentJobs": 4,
+  "allowedCommands": ["swipl", "node", "git", "ls", "echo", "cat", "cp", "mv", "mkdir", "pwd"],
+  "swiplStackLimit": "54G"
+}

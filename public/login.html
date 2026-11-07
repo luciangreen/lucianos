@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LucianOS — log in</title>
+  <link rel="stylesheet" href="/shared/style.css">
+  <script type="module" src="/login.js"></script>
+</head>
+<body>
+  <div class="login">
+    <form id="form">
+      <h1>LucianOS</h1>
+      <p class="quiet">Enter the suite password.</p>
+      <input id="password" type="password" autocomplete="current-password" required autofocus>
+      <button class="primary" type="submit">Log in</button>
+      <p id="message" class="error"></p>
+    </form>
+  </div>
+</body>
+</html>

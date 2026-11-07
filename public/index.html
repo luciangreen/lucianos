@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LucianOS — platform check</title>
+  <link rel="stylesheet" href="/shared/style.css">
+  <script type="module" src="/main.js"></script>
+</head>
+<body>
+  <header class="bar">
+    <h1>LucianOS</h1>
+    <span id="mode" class="quiet"></span>
+    <span class="spacer"></span>
+    <span id="notice" class="status"></span>
+    <button id="logout" class="hidden">Log out</button>
+  </header>
+
+  <main class="check">
+    <section class="panel" aria-label="Files">
+      <h2>Files</h2>
+      <div id="crumbs" class="crumbs"></div>
+      <div class="row">
+        <input id="search" type="search" placeholder="Find by name">
+        <label class="quiet"><input id="searchContents" type="checkbox"> contents</label>
+      </div>
+      <ul id="files" class="files"></ul>
+      <div class="row">
+        <button id="newFile">New file</button>
+        <button id="newFolder">New folder</button>
+        <button id="rename" disabled>Rename</button>
+        <button id="trash" disabled>Trash</button>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="Editor">
+      <h2>Editor</h2>
+      <div class="row">
+        <span id="openPath" class="mono quiet">No file open</span>
+        <span class="spacer"></span>
+        <span id="saveStatus" class="status quiet"></span>
+        <button id="save" class="primary" disabled>Save</button>
+      </div>
+      <textarea id="editor" class="editor" spellcheck="false" disabled></textarea>
+    </section>
+
+    <section class="panel wide" aria-label="Run a command">
+      <h2>Run a command <span class="quiet">(in the open folder)</span></h2>
+      <div class="row">
+        <select id="cmd" aria-label="Command"></select>
+        <input id="args" type="text" class="mono" placeholder='arguments, e.g. -la   or a Prolog goal when "Prolog goal" is ticked'>
+        <label class="quiet"><input id="isProlog" type="checkbox"> Prolog goal</label>
+        <button id="run" class="primary">Run</button>
+        <button id="cancel" disabled>Interrupt</button>
+      </div>
+      <pre id="output" class="output" aria-live="polite"></pre>
+    </section>
+  </main>
+</body>
+</html>

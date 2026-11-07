@@ -1,0 +1,16 @@
+{
+  "name": "lucianos",
+  "version": "0.1.0",
+  "description": "LucianOS suite: shared platform (Phase 0) for LucianOS, iEdit, shellrun and the other apps",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "set-password": "node scripts/set-password.js",
+    "test": "node --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "BSD-3-Clause"
+}

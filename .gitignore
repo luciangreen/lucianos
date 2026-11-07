@@ -1,0 +1,7 @@
+node_modules/
+config.json
+*.tmp
+.DS_Store
+# App repos are cloned into apps/ and kept in their own repos
+apps/*
+!apps/.gitkeep
