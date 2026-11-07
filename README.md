@@ -211,6 +211,19 @@ SSI
 culturaltranslationtool
 ```
 
+* NB lucianos works with GL and Breasoning by being at ~/Library/CloudStorage/Dropbox/GitHub-private2/lucianos/ where “~/Dropbox is a symlink to ~/Library/CloudStorage/Dropbox”. This is accomplished with the commands:
+* Check first that ~/Dropbox doesn’t already exist, because the Dropbox app sometimes creates it:
+
+```sh
+# Run from any folder
+ls -ld ~/Dropbox
+```
+
+If it says “No such file or directory”: run the ln -s command below.
+```sh
+ln -s ~/Library/CloudStorage/Dropbox ~/Dropbox
+```
+
 ## Next
 
 All seven apps are built. Next: try them on your Mac and iPhone and tell me what to change.
