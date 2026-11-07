@@ -36,7 +36,7 @@ LucianOS is a web desktop that runs on your Mac. You can reach it from the Mac, 
     - "run hello", "find plan"
     - "what is open bracket 1 plus 2 close bracket squared", "what time is it"
     - "brainstorm time travel" starts `LucianOS/brainstorm/time-travel.md` and opens it.
-    - "breason file.txt" opens your Breasoning script in shellrun.
+    - "breason meditation" breasons that Grammar Logic file ("breason it" does the newest).
     - "run today's workflows", "show me the checklist", "grammar logic on pedagogy", "play today's music", "comment on notes" (with simplug)
   - **Suggestions:** above the input it offers what you're likely to want next. It learns from what you have run before, at this time of day, in this folder, and what usually follows the last thing you did. Tap a suggestion to put it in the input, change it if you like, then send it.
   - On a phone it starts as a small face bubble, so it doesn't cover the screen.
@@ -58,9 +58,15 @@ LucianOS is a web desktop that runs on your Mac. You can reach it from the Mac, 
 
   **Run today's** runs every daily item. Scripts run side by side, and scripts that pause for you open in shellrun. The list can be shrunk to its title bar.
 - **Grammar Logic** (Tools ▸ Grammar Logic…, or say "grammar logic on meditation"):
-  - It asks for a topic and runs `grammar_logic_to_alg1` from your Algorithm-Writer-with-Lists folder.
+  - It asks for a topic and runs Grammar Logic the way `br_16k_args_algs` in `find_char_map.pl` (private repo) does. The topic goes on its own line, repeated and cut to 200 words, then in Algorithm-Writer-with-Lists:
+    `As is 4*50, grammar_logic_to_alg1(Essay_0,As,GL_out1), term_to_atom(GL_out1,GL_out2), string_atom(GL_out,GL_out2)`
+  - The files are loaded as `find_char_map.pl` gets them through `cgpt_combophil_analogy.pl`: `Text-to-Breasonings/text_to_breasonings.pl` and `Algorithm-Writer-with-Lists/grammar_logic_to_alg1.pl`. LucianOS writes a small loader that includes both, `LucianOS/prolog/gl_and_breasoning.pl`, so shared files load once.
+  - Those files also need listprologinterpreter, Philosophy, Languages, List-Prolog-to-Prolog-Converter, Prolog-to-List-Prolog, SSI and culturaltranslationtool next to them, as in your `GitHub-private2` folder.
   - It saves the result one item per line in `LucianOS/gl/<topic> <date time>.txt` and opens it in iEdit.
-  - When you've finished the file, **Breason it** puts the text into `Text-to-Breasonings/file.txt` and runs your Breasoning script in shellrun, which asks the thesis question first.
+  - When you've finished the file, **Breason it** reads it as `GL_out` and runs, in Text-to-Breasonings:
+    `As is 4*50, Br is As*80, texttobr2(u,u,GL_out,Br,[auto,on]), texttobr(u,u,GL_out,u)`
+    The output appears in a Breasoning window, with a Stop button.
+  - `scripts/check-gl-breasoning.mjs` runs both calls against real checkouts. GitHub Actions runs it (the "Grammar Logic and breasoning" check): Grammar Logic on "meditation" took 3 seconds, and breasoning its 16,000 words took about a minute.
   - **Save finished copy** files it, by default in `LucianOS/gl/finished/`, and ticks Grammar Logic off for today.
 - **Reminders and questions:**
   - Each morning LucianOS asks whether to run today's workflows, start Grammar Logic now, or remind you later.
@@ -72,7 +78,6 @@ LucianOS is a web desktop that runs on your Mac. You can reach it from the Mac, 
   - 💬 asks the character what it thinks of a song (needs simplug).
 - **Tools ▸ Workflow settings** sets these places:
   - the folders for Algorithm-Writer-with-Lists, Text-to-Breasonings and Music-Composer (defaults under `Dropbox/GitHub-private2/`)
-  - the breasoning script
   - where to save Grammar Logic files and how long they are
   - the reminder times
   - the shortlist folder
