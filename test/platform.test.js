@@ -109,6 +109,17 @@ describe('sandboxed files', () => {
     assert.ok(trashed.some((n) => n.endsWith('__e.txt')));
   });
 
+  test('copy makes a second file and refuses to overwrite', async () => {
+    await s.request('PUT', '/api/files/write?path=song.mid', { body: 'MThd' });
+    let r = await s.request('POST', '/api/files/copy', { body: { from: 'song.mid', to: 'short/song.mid' } });
+    assert.equal(r.status, 200);
+    assert.equal(fs.readFileSync(path.join(s.root, 'short/song.mid'), 'utf8'), 'MThd');
+    r = await s.request('POST', '/api/files/copy', { body: { from: 'song.mid', to: 'short/song.mid' } });
+    assert.equal(r.status, 409);
+    r = await s.request('POST', '/api/files/copy', { body: { from: 'song.mid', to: '../x.mid' } });
+    assert.equal(r.status, 403);
+  });
+
   test('search by name and by contents', async () => {
     await s.request('PUT', '/api/files/write?path=deep/x/needle.pl&mkdirs=1', { body: 'a.\nfind_me(1).\n' });
     let r = await s.request('GET', '/api/files/search?q=needle');

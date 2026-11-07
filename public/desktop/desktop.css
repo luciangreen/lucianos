@@ -88,3 +88,55 @@ body.dragging-window iframe { pointer-events: none; }
   .clock, .menu[data-menu='go'] { display: none; }
   .spotlight input { width: 38vw; }
 }
+
+/* prompts (reminders and questions), stacked under the menu bar */
+.prompts { position: fixed; top: 46px; left: 50%; transform: translateX(-50%); z-index: 150000; display: grid; gap: 6px; width: min(760px, 96vw); }
+.promptbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 10px 8px 16px; background: var(--panel); border: 1px solid color-mix(in srgb, var(--accent) 50%, var(--line)); border-radius: 12px; box-shadow: 0 10px 30px rgb(0 0 0 / 22%); }
+.promptbar .ptext { flex: 1 1 220px; font-weight: 600; }
+.promptbar button { min-height: 36px; }
+.promptbar .pclose { border: none; background: none; }
+
+/* checklist */
+.win.collapsed { height: auto !important; min-height: 0; resize: none; }
+.win.collapsed .body, .win.collapsed .statusline { display: none; }
+.checklist { padding: 6px 8px; display: grid; gap: 6px; align-content: start; }
+.witem { border: 1px solid var(--line); border-radius: 10px; padding: 6px 8px; display: grid; gap: 4px; background: var(--panel); }
+.witem.done { opacity: 0.6; }
+.witem.done .wtitle { text-decoration: line-through; }
+.witem.hiddenitem { border-style: dashed; }
+.wline { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.wline input[type='checkbox'] { width: 20px; height: 20px; }
+.wline .wtitle { flex: 1 1 140px; min-height: 32px; font-weight: 600; border-color: transparent; background: transparent; }
+.wline .wtitle:focus, .wline .wcomment:focus { border-color: var(--accent); background: var(--panel); }
+.wline .wcomment { flex: 1 1 180px; min-height: 30px; font-size: 13px; border-color: transparent; background: var(--bg); }
+.wline select { min-height: 30px; font-size: 13px; border-radius: 6px; }
+.wline select[data-status='profitable'] { color: var(--good); font-weight: 600; }
+.wline select[data-status='not-profitable'] { color: var(--bad); }
+.wline button { min-height: 30px; min-width: 32px; padding: 0 6px; }
+.wkind { font-size: 11.5px; color: var(--quiet); border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; white-space: nowrap; }
+.wstate { font-size: 12px; font-weight: 600; }
+.wstate.running { color: var(--accent); }
+.wstate.done { color: var(--good); }
+.wstate.failed { color: var(--bad); }
+.wline.sub { padding-left: 26px; }
+.addform { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; margin: 6px 8px 0; border: 1px dashed var(--accent); border-radius: 10px; }
+.addform input[type='text'], .addform select { min-height: 34px; flex: 1 1 140px; }
+.wfsettings { display: grid; gap: 8px; padding: 12px; }
+.wfsettings label { display: grid; gap: 2px; font-size: 13px; color: var(--quiet); }
+.wfsettings input { min-height: 34px; color: var(--ink); }
+
+/* today's music */
+.musiclist { padding: 6px 8px; display: grid; gap: 4px; align-content: start; }
+.song { display: grid; grid-template-columns: auto auto 1fr auto auto; grid-template-areas: 'play star name info comment' 'bar bar bar bar bar'; align-items: center; gap: 2px 8px; padding: 6px 8px; border-radius: 8px; }
+.song:nth-child(odd) { background: var(--bg); }
+.song > button:first-child { grid-area: play; }
+.song .star { grid-area: star; color: #c58a00; }
+.song .name { grid-area: name; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.song > .quiet { grid-area: info; }
+.song > button:last-child { grid-area: comment; }
+.song button { min-height: 32px; min-width: 34px; padding: 0 6px; }
+.song .progress { grid-area: bar; height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; }
+.song .progress span { display: block; height: 100%; width: 0; background: var(--accent); transition: width 0.2s linear; }
+.win .statusline.row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; padding: 6px 8px; }
+.win .statusline.row input { flex: 1 1 160px; min-height: 32px; }
+.win .statusline.row button { min-height: 32px; }

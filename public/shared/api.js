@@ -44,6 +44,7 @@ export const api = {
         baseMtime ? { 'X-Base-Mtime': String(baseMtime) } : {}),
     mkdir: (path) => call('POST', '/api/files/mkdir', { path }),
     move: (from, to) => call('POST', '/api/files/move', { from, to }),
+    copy: (from, to) => call('POST', '/api/files/copy', { from, to }),
     trash: (path) => call('POST', '/api/files/trash', { path }),
     search: (q2, opts = {}) =>
       call('GET', `/api/files/search?${q({ q: q2, path: opts.path, contents: opts.contents ? 1 : undefined, regex: opts.regex ? 1 : undefined, case: opts.caseSensitive ? 1 : undefined })}`),

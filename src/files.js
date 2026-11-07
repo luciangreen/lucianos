@@ -141,6 +141,21 @@ export function fileRoutes(router, { sandbox, bus, cfg }) {
     sendJson(res, 200, info);
   });
 
+  // Copy a file or folder. Refuses to overwrite.
+  router.post('/api/files/copy', async (req, res) => {
+    const { from, to } = await readJson(req);
+    const src = sandbox.resolve(from);
+    const dest = sandbox.resolve(to);
+    await statOr404(src);
+    if (fs.existsSync(dest)) throw new HttpError(409, 'Something with that name already exists');
+    if (dest.startsWith(src + path.sep)) throw new HttpError(400, 'Cannot copy a folder inside itself');
+    await fsp.mkdir(path.dirname(dest), { recursive: true });
+    await fsp.cp(src, dest, { recursive: true, preserveTimestamps: true, errorOnExist: true, force: false });
+    const info = entryInfo(sandbox, dest, await fsp.stat(dest));
+    bus.publish('file.created', { path: info.path });
+    sendJson(res, 200, info);
+  });
+
   router.post('/api/files/trash', async (req, res) => {
     const { path: p } = await readJson(req);
     const src = sandbox.resolve(p);

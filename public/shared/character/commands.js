@@ -52,6 +52,11 @@ export function parseCommand(raw) {
   if (/^(go )?home$|^go to (the )?home( folder)?$/.test(lower)) return { intent: 'home' };
   if ((m = /^(?:go to|go into|change to|cd|open (?:the )?folder)\s+(.+)$/i.exec(t))) return { intent: 'goto', name: tidyName(m[1]) };
   if ((m = /^breason(?: out)?\s+(.+)$/i.exec(t))) return { intent: 'breason', name: tidyName(m[1]) };
+  if ((m = /^(?:comment on|what do you think (?:of|about)|review|tell me about)\s+(.+)$/i.exec(t))) return { intent: 'comment', name: tidyName(m[1]) };
+  if ((m = /^(?:(?:do|run|start)\s+)?grammar logic(?:\s+(?:on|about|for))?\s*(.*)$/i.exec(t))) return { intent: 'gl', topic: m[1].trim() };
+  if ((m = /^(?:(run|start|do)\s+)?(?:today'?s|the daily|my daily|daily)\s+(?:workflows?|routine|checklist)$/i.exec(t))) return { intent: 'workflows', run: !!m[1] };
+  if (/^(?:show|open)(?: me)?(?: the| my)? (?:checklist|workflows?)$/i.test(t)) return { intent: 'workflows', run: false };
+  if (/^(?:play|listen to|show)(?: me)?\s+(?:today'?s|the new|new|recent|the latest)\s+(?:music|songs?)$/i.test(t)) return { intent: 'music' };
   if ((m = /^brainstorm(?: (?:about|on))?\s+(.+)$/i.exec(t))) return { intent: 'brainstorm', topic: m[1].trim() };
   if ((m = /^(?:find|search for|search|look for|where is|where's)\s+(.+)$/i.exec(t))) return { intent: 'find', query: m[1].trim() };
   if ((m = /^(?:run|start|execute)\s+(.+)$/i.exec(t))) return { intent: 'run', name: tidyName(m[1]) };
@@ -109,4 +114,4 @@ export function bestMatch(spoken, candidates) {
   return best;
 }
 
-export const HELP_TEXT = 'You can say: go to a folder, go up, go home, open a file or app, run a script, find something, what is two plus two, what time is it, or what\'s here.';
+export const HELP_TEXT = 'You can say: go to a folder, go up, go home, open a file or app, run a script, find something, what is two plus two, what time is it, what\'s here, comment on a file, grammar logic on a topic, run today\'s workflows, or play today\'s music.';

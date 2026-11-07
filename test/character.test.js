@@ -23,6 +23,18 @@ test('open, run, find, breason, brainstorm', () => {
   assert.deepEqual(parseCommand('brainstorm about time travel'), { intent: 'brainstorm', topic: 'time travel' });
 });
 
+test('workflow commands', () => {
+  assert.deepEqual(parseCommand('comment on notes dot txt'), { intent: 'comment', name: 'notes.txt' });
+  assert.deepEqual(parseCommand('what do you think of song one'), { intent: 'comment', name: 'song one' });
+  assert.deepEqual(parseCommand('grammar logic on meditation'), { intent: 'gl', topic: 'meditation' });
+  assert.deepEqual(parseCommand('do grammar logic'), { intent: 'gl', topic: '' });
+  assert.deepEqual(parseCommand("run today's workflows"), { intent: 'workflows', run: true });
+  assert.deepEqual(parseCommand('my daily routine'), { intent: 'workflows', run: false });
+  assert.deepEqual(parseCommand('show me the checklist'), { intent: 'workflows', run: false });
+  assert.deepEqual(parseCommand("play today's music"), { intent: 'music' });
+  assert.deepEqual(parseCommand('listen to the new songs'), { intent: 'music' });
+});
+
 test('maths, spoken or typed', () => {
   assert.equal(spokenMaths('two plus three times four'), '2 + 3 * 4');
   assert.equal(spokenMaths('open bracket 1 plus 2 close bracket squared'), '( 1 + 2 ) ^2');

@@ -37,7 +37,44 @@ LucianOS is a web desktop that runs on your Mac. You can reach it from the Mac, 
     - "what is open bracket 1 plus 2 close bracket squared", "what time is it"
     - "brainstorm time travel" starts `LucianOS/brainstorm/time-travel.md` and opens it.
     - "breason file.txt" opens your Breasoning script in shellrun.
+    - "run today's workflows", "show me the checklist", "grammar logic on pedagogy", "play today's music", "comment on notes" (with simplug)
   - On a phone it starts as a small face bubble, so it doesn't cover the screen.
+- **Tools ▸ Checklist:** your workflows, each with:
+  - **done** (for daily items, done today)
+  - a name you can edit
+  - a **profitable** status: Not yet, Profitable or Not profitable
+  - a comment
+  - when it was made and changed
+  - ▶ to run it, ＋ to add a child use (it asks what else it could be used for, adds it underneath and opens a page to plan it), 🙈 to hide it, and ✕ to delete it
+
+  Workflows can be:
+  - a shellrun script
+  - a web address
+  - an app
+  - **Grammar Logic**
+  - **Today's music**
+  - a note
+
+  **Run today's** runs every daily item. Scripts run side by side, and scripts that pause for you open in shellrun. The list can be shrunk to its title bar.
+- **Grammar Logic** (Tools ▸ Grammar Logic…, or say "grammar logic on meditation"):
+  - It asks for a topic and runs `grammar_logic_to_alg1` from your Algorithm-Writer-with-Lists folder.
+  - It saves the result one item per line in `LucianOS/gl/<topic> <date time>.txt` and opens it in iEdit.
+  - When you've finished the file, **Breason it** puts the text into `Text-to-Breasonings/file.txt` and runs your Breasoning script in shellrun, which asks the thesis question first.
+  - **Save finished copy** files it, by default in `LucianOS/gl/finished/`, and ticks Grammar Logic off for today.
+- **Reminders and questions:**
+  - Each morning LucianOS asks whether to run today's workflows, start Grammar Logic now, or remind you later.
+  - At your reminder times (10:00 and 15:00 unless you change them), it asks again, until Grammar Logic is done: **Start now**, **In an hour** or **Not today**.
+- **Tools ▸ Today's music:**
+  - Songs Music-Composer made in the last day (or 7 days, or all), played in the browser.
+  - ☆ shortlists a favourite. **Copy shortlist** copies them to `Music/GarageBand shortlist`.
+  - **Open in GarageBand** opens them on the Mac. It needs `"open"` added to `allowedCommands`.
+  - 💬 asks the character what it thinks of a song (needs simplug).
+- **Tools ▸ Workflow settings** sets these places:
+  - the folders for Algorithm-Writer-with-Lists, Text-to-Breasonings and Music-Composer (defaults under `Dropbox/GitHub-private2/`)
+  - the breasoning script
+  - where to save Grammar Logic files and how long they are
+  - the reminder times
+  - the shortlist folder
 - **Windows** come back where you left them next time. On an iPhone, one window shows at a time with tabs to switch.
 
 The old platform check page is at `/check.html` (**LucianOS ▸ Platform check page**).
@@ -115,7 +152,7 @@ api.jobs.stream(job.id, { output: ({ text }) => console.log(text), end: (s) => c
 npm test
 ```
 
-There are 45 tests. They cover the character's command grammar (spoken maths, fuzzy names), the calculator, durations and time zones, plus sandbox escapes, symlinks, save conflicts, trash, search, the command allowlist, shell-injection attempts, interrupt, input, temporary folders, the job queue, output streaming, the Prolog command line, state, events, the local-mode guards, password login and its rate limit.
+There are 56 tests. They cover the workflow checklist (daily items, child uses, reminder times, the Grammar Logic goal), MIDI reading and key finding, file copies, the character's command grammar (spoken maths, fuzzy names), the calculator, durations and time zones, plus sandbox escapes, symlinks, save conflicts, trash, search, the command allowlist, shell-injection attempts, interrupt, input, temporary folders, the job queue, output streaming, the Prolog command line, state, events, the local-mode guards, password login and its rate limit.
 
 ## Adding the apps
 
@@ -135,4 +172,4 @@ For example, iEdit opens at http://localhost:4170/apps/iedit/. The platform repo
 
 ## Next
 
-Phase 4 adds the desktop's workflow checklist, daily workflows, Grammar Logic and Music-Composer, and simplug's comments.
+Phase 5 is fastos: optimising folders of repos with the mnns repo's optimise command, timing the tests before and after.

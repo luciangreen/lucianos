@@ -7,6 +7,8 @@ import { IconView, clearSelection, currentSelection, refreshFolder } from './ico
 import { activeWindow, createWindow, renderTabs, setOnChange, windows } from './wm.js';
 import { mountCharacter } from '/shared/character/character.js';
 import { bestMatch } from '/shared/character/commands.js';
+import { midiStats, parseMidi } from '/shared/midi.js';
+import { initWorkflows } from './workflows.js';
 
 const MAC = /Mac|iPhone|iPad/.test(navigator.platform);
 const MOD = MAC ? '⌘' : 'Ctrl+';
@@ -47,6 +49,43 @@ const positions = {
 function rememberFolder(folder) {
   state.recent = [folder, ...state.recent.filter((f) => f !== folder)].slice(0, 10);
   buildGoMenu();
+}
+
+// ---------------- workflows (checklist, Grammar Logic, music) ----------------
+const wf = initWorkflows({
+  createWindow,
+  windows,
+  openApp: (...a) => openApp(...a),
+  openUrl: (...a) => openUrl(...a),
+  notice,
+  showError,
+  info: () => info,
+  character: () => character,
+  commentOn: (path) => commentOn(path)
+});
+
+// simplug's comments, spoken by the character
+async function commentOn(path) {
+  if (!info.apps.includes('simplug')) return showError('Install simplug (clone it into lucianos/apps) for comments.');
+  try {
+    const { commentOnFile, commentOnMusic } = await import('/apps/simplug/lib/comment.js');
+    let c;
+    if (/\.midi?$/i.test(path)) {
+      const res = await fetch(api.files.rawUrl(path), { credentials: 'same-origin' });
+      c = commentOnMusic({ path, stats: midiStats(parseMidi(new Uint8Array(await res.arrayBuffer()))) });
+    } else {
+      const { content } = await api.files.read(path);
+      c = commentOnFile({ path, text: content });
+    }
+    if (!character) await startCharacter();
+    character.show();
+    character.say(c.speech);
+    if (c.offerGL) wf.prompt(`Run Grammar Logic on “${c.topic}” for ${path.split('/').pop()}?`, [['Run Grammar Logic', () => wf.runGL(c.topic), true]]);
+    return c.speech;
+  } catch (err) {
+    showError(`Couldn't comment: ${err.message}`);
+    return null;
+  }
 }
 
 // ---------------- opening things ----------------
@@ -489,6 +528,7 @@ function buildMenus() {
     { label: 'New URL icon', action: () => newUrlIcon() },
     null,
     { label: 'Rename', key: 'Enter', action: renameSelection },
+    { label: 'Ask the character about it', action: () => { const { entries } = currentSelection(); const f = entries.find((e) => e.type === 'file'); if (f) commentOn(f.path); else notice('Select a file first'); } },
     { label: 'Move to trash', key: '⌫', action: trashSelection },
     null,
     { label: 'Close window', action: () => activeWindow()?.close() }
@@ -497,6 +537,11 @@ function buildMenus() {
   buildMenu('apps', info.apps.length ? info.apps.map((id) => ({ label: `${appInfo(id).glyph}  ${appInfo(id).name}`, action: () => openApp(id) }))
     : [{ label: 'No apps installed yet (clone them into lucianos/apps)', action: () => {} }]);
   buildMenu('tools', [
+    { label: '✅  Checklist', action: () => wf.checklistWindow() },
+    { label: '🧠  Grammar Logic…', action: () => wf.runGL() },
+    { label: "🎵  Today's music", action: () => wf.musicWindow() },
+    { label: '⚙  Workflow settings', action: () => wf.settingsWindow() },
+    null,
     { label: '🧮  Calculator', action: () => calculatorWindow() },
     { label: '🕒  Time converter', action: () => timeWindow() },
     { label: '🔎  Spotlight', key: `${MOD}K`, action: () => $('spot').focus() },
@@ -554,7 +599,15 @@ async function namesHere() {
 
 async function handleCommand(cmd) {
   const here = hereFolder();
+  const fromWorkflows = await wf.handleCommand(cmd);
+  if (fromWorkflows !== undefined) return fromWorkflows;
   switch (cmd.intent) {
+    case 'comment': {
+      const hit = bestMatch(cmd.name, (await namesHere()).filter((e) => e.type === 'file'));
+      if (!hit) return `I can't see ${cmd.name} here.`;
+      await commentOn(hit.path);
+      return '';
+    }
     case 'list': {
       const entries = await namesHere();
       const shown = entries.slice(0, 12).map((e) => displayName(e)).join(', ');
@@ -640,6 +693,10 @@ async function startCharacter() {
 
 // Apps in windows (e.g. the touchscreen terminal) ask the desktop to open things.
 addEventListener('message', (e) => {
+  if (e.origin === location.origin && e.data?.type === 'lucianos.gl' && typeof e.data.topic === 'string') {
+    wf.runGL(e.data.topic || null);
+    return;
+  }
   if (e.origin !== location.origin || e.data?.type !== 'lucianos.open' || typeof e.data.path !== 'string') return;
   const path = e.data.path;
   if (e.data.editor) return openApp('iedit', { open: path });
@@ -684,6 +741,8 @@ async function init() {
   });
   addEventListener('resize', () => desktopView.render());
 
+  await wf.load();
+
   // windows from last time
   restoring = true;
   for (const w of saved?.windows ?? []) {
@@ -692,6 +751,8 @@ async function init() {
       else if (w.kind === 'app') openApp(w.app, {}, w.geometry);
       else if (w.kind === 'calc') calculatorWindow(w.geometry);
       else if (w.kind === 'time') timeWindow(w.geometry);
+      else if (w.kind === 'checklist') wf.checklistWindow(w.geometry);
+      else if (w.kind === 'music') wf.musicWindow(w.geometry);
       else if (w.kind === 'page' && safeUrl(w.url)) frameWindow({ kind: 'page', title: w.url, src: w.url, data: { url: w.url }, geometry: w.geometry });
       else if (w.kind === 'viewer') openViewer({ path: w.path, name: w.name, type: 'file' }, w.geometry);
     } catch {}
@@ -699,9 +760,11 @@ async function init() {
   restoring = false;
   renderTabs();
 
-  if (!state.characterHidden) startCharacter().catch((err) => showError(`Character: ${err.message}`));
+  const characterReady = state.characterHidden ? Promise.resolve() : startCharacter().catch((err) => showError(`Character: ${err.message}`));
+  characterReady.then(() => wf.start());
 
   const params = new URLSearchParams(location.search);
+  if (params.get('gl')) characterReady.then(() => wf.runGL(params.get('gl')));
   if (params.get('open')) openEntry({ type: 'file', path: params.get('open'), name: params.get('open').split('/').pop(), size: 0 });
 }
 
