@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { BR, GL_AS, LOADER, breasonGoal, dailyToRun, dueReminder, glEssay, glGoal, loadGoal, isFinished, isRecent, needsPerson, newItem, ordered, parseTimes, prologString, slug, stamp, today } from '../public/desktop/workflows-lib.js';
+import { BR, GL_AS, LOADER, breasonGoal, dailyToRun, dueReminder, firstWord, glGoal, loadGoal, isFinished, isRecent, needsPerson, newItem, ordered, parseTimes, prologString, slug, stamp, today } from '../public/desktop/workflows-lib.js';
 
 test('daily items finish for the day only', () => {
   const d = newItem({ title: 'GL', daily: true, finishedOn: '2026-11-07' });
@@ -35,11 +35,11 @@ test('reminder times', () => {
 
 test('Grammar Logic and breasoning use the calls in find_char_map.pl', () => {
   assert.equal(prologString('say "hi" \\ there'), '"say \\"hi\\" \\\\ there"');
-  assert.equal(GL_AS, 200);
-  assert.equal(BR, 16000);
-  // Essay_03: the topic on its own line, ceiling(200/Words) times
-  assert.equal(glEssay('time travel'), 'time travel\n'.repeat(100));
-  assert.equal(glEssay('meditation'), 'meditation\n'.repeat(200));
+  // Grammar Logic copies the first word and adds 79: 80 words to breason
+  assert.equal(GL_AS, 1);
+  assert.equal(BR, 80);
+  assert.equal(firstWord('  time travel'), 'time');
+  assert.equal(firstWord("Lucian's meditation"), "Lucian's");
   const folders = { awl: 'Dropbox/GitHub-private2/Algorithm-Writer-with-Lists', t2b: 'Dropbox/GitHub-private2/Text-to-Breasonings' };
   // paths are absolute, from the suite folder, so a linked Dropbox folder can't break them
   const load = loadGoal(folders);
@@ -49,11 +49,11 @@ test('Grammar Logic and breasoning use the calls in find_char_map.pl', () => {
   assert.match(load, /:-include\(~q\)\.~n:-include\(~q\)\.~n',\[T2B_file,GL_file\]\), close\(Loader_s\), consult\(Loader\)$/);
   assert.ok(!load.includes('..'));
   const g = glGoal('say "hi"', folders);
-  assert.ok(g.startsWith(load + ', Essay_03 = "say \\"hi\\"\\nsay'));
-  assert.match(g, /, truncate1\(string,Essay_03,200,Essay_0\), As is 4\*50, grammar_logic_to_alg1\(Essay_0,As,GL_out1\), term_to_atom\(GL_out1,GL_out2\), string_atom\(GL_out,GL_out2\), write\(GL_out\), nl$/);
+  assert.ok(g.startsWith(load + ', Essay_0 = "say", As is 1, grammar_logic_to_alg1'));
+  assert.match(g, /, As is 1, grammar_logic_to_alg1\(Essay_0,As,GL_out1\), term_to_atom\(GL_out1,GL_out2\), string_atom\(GL_out,GL_out2\), write\(GL_out\), nl$/);
   const b = breasonGoal('LucianOS/gl/meditation 2026-11-07 1500.txt', folders);
   assert.ok(b.startsWith(load + `, atomic_list_concat([Root,'/',"LucianOS/gl/meditation 2026-11-07 1500.txt"],GL_path), read_file_to_string(GL_path,GL_text,[]), `));
-  assert.match(b, /As is 4\*50, Br is As\*80, texttobr2\(u,u,GL_out,Br,\[auto,on\]\), texttobr\(u,u,GL_out,u\)$/);
+  assert.match(b, /As is 1, Br is As\*80, texttobr2\(u,u,GL_out,Br,\[auto,on\]\), texttobr\(u,u,GL_out,u\)$/);
   assert.equal(LOADER, 'LucianOS/prolog/gl_and_breasoning.pl');
 });
 

@@ -187,7 +187,7 @@ export function initWorkflows(ctx) {
   }
 
   // Breasons a Grammar Logic file in Text-to-Breasonings:
-  // texttobr2(u,u,GL_out,Br,[auto,on]), texttobr(u,u,GL_out,u), with Br = 4*50*80.
+  // texttobr2(u,u,GL_out,Br,[auto,on]), texttobr(u,u,GL_out,u), with Br = As*80 = 80 words.
   async function breason(path, item) {
     const t2b = st.settings.t2b;
     let job;

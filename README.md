@@ -58,16 +58,16 @@ LucianOS is a web desktop that runs on your Mac. You can reach it from the Mac, 
 
   **Run today's** runs every daily item. Scripts run side by side, and scripts that pause for you open in shellrun. The list can be shrunk to its title bar.
 - **Grammar Logic** (Tools ▸ Grammar Logic…, or say "grammar logic on meditation"):
-  - It asks for a topic and runs Grammar Logic the way `br_16k_args_algs` in `find_char_map.pl` (private repo) does. The topic goes on its own line, repeated and cut to 200 words, then in Algorithm-Writer-with-Lists:
-    `As is 4*50, grammar_logic_to_alg1(Essay_0,As,GL_out1), term_to_atom(GL_out1,GL_out2), string_atom(GL_out,GL_out2)`
+  - It asks for a topic and runs Grammar Logic with the calls from `br_16k_args_algs` in `find_char_map.pl` (private repo). It copies the topic's first word and adds 79 words, so the file has 80 words. In Algorithm-Writer-with-Lists:
+    `Essay_0 = "<first word>", As is 1, grammar_logic_to_alg1(Essay_0,As,GL_out1), term_to_atom(GL_out1,GL_out2), string_atom(GL_out,GL_out2)`
   - The files are loaded as `find_char_map.pl` gets them through `cgpt_combophil_analogy.pl`: `Text-to-Breasonings/text_to_breasonings.pl` and `Algorithm-Writer-with-Lists/grammar_logic_to_alg1.pl`. Prolog writes a small loader that includes both, `LucianOS/prolog/gl_and_breasoning.pl`, so shared files load once. All paths are absolute, from the suite folder, so they still work when Dropbox is a link (as on a Mac, into `Library/CloudStorage`).
   - Those files also need listprologinterpreter, Philosophy, Languages, List-Prolog-to-Prolog-Converter, Prolog-to-List-Prolog, SSI and culturaltranslationtool next to them, as in your `GitHub-private2` folder.
-  - It saves the result one item per line in `LucianOS/gl/<topic> <date time>.txt` and opens it in iEdit.
+  - It saves the result in `LucianOS/gl/<topic> <date time>.txt` and opens it in iEdit.
   - When you've finished the file, **Breason it** reads it as `GL_out` and runs, in Text-to-Breasonings:
-    `As is 4*50, Br is As*80, texttobr2(u,u,GL_out,Br,[auto,on]), texttobr(u,u,GL_out,u)`
+    `As is 1, Br is As*80, texttobr2(u,u,GL_out,Br,[auto,on]), texttobr(u,u,GL_out,u)`
+    This breasons out the file's 80 words.
     The output appears in a Breasoning window, with a Stop button.
-  - `scripts/check-gl-breasoning.mjs` runs both calls against real checkouts. GitHub Actions runs it (the "Grammar Logic and breasoning" check): Grammar Logic on "meditation" took 3 seconds, and breasoning its 16,000 words took about a minute.
-  - **Save finished copy** files it, by default in `LucianOS/gl/finished/`, and ticks Grammar Logic off for today.
+  - `scripts/check-gl-breasoning.mjs` runs both calls against real checkouts. GitHub Actions runs it (the "Grammar Logic and breasoning" check): It checks that Grammar Logic gives 80 words and that breasoning breasons all 80.
 - **Reminders and questions:**
   - Each morning LucianOS asks whether to run today's workflows, start Grammar Logic now, or remind you later.
   - At your reminder times (10:00 and 15:00 unless you change them), it asks again, until Grammar Logic is done: **Start now**, **In an hour** or **Not today**.
