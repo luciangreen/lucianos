@@ -104,7 +104,7 @@ export function prologString(s) {
 // ---------------------------------------------------------------- Grammar Logic and breasoning
 // These use the calls in br_16k_args_algs in find_char_map.pl (private repo), with one word:
 //   As is 1, Br is As*80,
-//   grammar_logic_to_alg1(Essay_0,As,GL_out1), term_to_atom(GL_out1,GL_out2), string_atom(GL_out,GL_out2)
+//   grammar_logic_to_alg1(Essay_0,As,GL_out1), written one word per line
 //   (in Algorithm-Writer-with-Lists), then in Text-to-Breasonings:
 //   texttobr2(u,u,GL_out,Br,[auto,on]), texttobr(u,u,GL_out,u)
 // with the files find_char_map.pl gets through cgpt_combophil_analogy.pl:
@@ -148,9 +148,10 @@ export function glGoal(topic, folders) {
     `Essay_0 = ${prologText(firstWord(topic))}`,
     'As is 1',
     'grammar_logic_to_alg1(Essay_0,As,GL_out1)',
-    'term_to_atom(GL_out1,GL_out2)',
-    'string_atom(GL_out,GL_out2)',
-    'write(GL_out), nl'
+    // GL_out1 is a quoted string holding the list of words: read it twice, then one word per line
+    'term_to_atom(GL_list_text,GL_out1)',
+    'term_string(GL_list,GL_list_text)',
+    'forall(member(GL_word,GL_list),writeln(GL_word))'
   ].join(', ');
 }
 

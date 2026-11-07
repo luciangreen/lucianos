@@ -58,8 +58,8 @@ LucianOS is a web desktop that runs on your Mac. You can reach it from the Mac, 
 
   **Run today's** runs every daily item. Scripts run side by side, and scripts that pause for you open in shellrun. The list can be shrunk to its title bar.
 - **Grammar Logic** (Tools ▸ Grammar Logic…, or say "grammar logic on meditation"):
-  - It asks for a topic and runs Grammar Logic with the calls from `br_16k_args_algs` in `find_char_map.pl` (private repo). It copies the topic's first word and adds 79 words, so the file has 80 words. In Algorithm-Writer-with-Lists:
-    `Essay_0 = "<first word>", As is 1, grammar_logic_to_alg1(Essay_0,As,GL_out1), term_to_atom(GL_out1,GL_out2), string_atom(GL_out,GL_out2)`
+  - It asks for a topic and runs Grammar Logic with the calls from `br_16k_args_algs` in `find_char_map.pl` (private repo). It copies the topic's first word and adds 79 words, so the file has 80 words, one per line. In Algorithm-Writer-with-Lists:
+    `Essay_0 = "<first word>", As is 1, grammar_logic_to_alg1(Essay_0,As,GL_out1)`, then it writes the words one per line.
   - The files are loaded as `find_char_map.pl` gets them through `cgpt_combophil_analogy.pl`: `Text-to-Breasonings/text_to_breasonings.pl` and `Algorithm-Writer-with-Lists/grammar_logic_to_alg1.pl`. Prolog writes a small loader that includes both, `LucianOS/prolog/gl_and_breasoning.pl`, so shared files load once. All paths are absolute, from the suite folder, so they still work when Dropbox is a link (as on a Mac, into `Library/CloudStorage`).
   - Those files also need listprologinterpreter, Philosophy, Languages, List-Prolog-to-Prolog-Converter, Prolog-to-List-Prolog, SSI and culturaltranslationtool next to them, as in your `GitHub-private2` folder.
   - It saves the result in `LucianOS/gl/<topic> <date time>.txt` and opens it in iEdit.

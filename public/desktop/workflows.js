@@ -153,8 +153,7 @@ export function initWorkflows(ctx) {
     api.jobs.stream(job.id, {
       output: ({ stream, text }) => (stream === 'stdout' ? (out += text) : (err += text)),
       end: async (j) => {
-        const glOut = out.trim();
-        const lines = glOut ? [glOut] : [];
+        const lines = out.split('\n').map((l) => l.trim()).filter(Boolean); // one word per line
         if (j.status !== 'done' || !lines.length) {
           showError(`Grammar Logic didn't finish: ${(err || out || j.status).trim().split('\n').slice(-2).join(' ')}`);
           say("Grammar Logic didn't work this time. The message is at the top of the screen.");
@@ -164,7 +163,7 @@ export function initWorkflows(ctx) {
         await api.files.write(path, lines.join('\n') + '\n', { mkdirs: true });
         if (item) set(item, { lastFile: path });
         openApp('iedit', { open: path });
-        say(`Grammar Logic for ${topic} is open in iEdit. When you've finished it, I can breason it and save it.`);
+        say(`Grammar Logic for ${topic} is open in iEdit: ${lines.length} words. When you've finished it, I can breason it and save it.`);
         afterGL(path, item);
       }
     });

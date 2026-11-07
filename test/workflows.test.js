@@ -50,7 +50,7 @@ test('Grammar Logic and breasoning use the calls in find_char_map.pl', () => {
   assert.ok(!load.includes('..'));
   const g = glGoal('say "hi"', folders);
   assert.ok(g.startsWith(load + ', Essay_0 = "say", As is 1, grammar_logic_to_alg1'));
-  assert.match(g, /, As is 1, grammar_logic_to_alg1\(Essay_0,As,GL_out1\), term_to_atom\(GL_out1,GL_out2\), string_atom\(GL_out,GL_out2\), write\(GL_out\), nl$/);
+  assert.match(g, /, As is 1, grammar_logic_to_alg1\(Essay_0,As,GL_out1\), term_to_atom\(GL_list_text,GL_out1\), term_string\(GL_list,GL_list_text\), forall\(member\(GL_word,GL_list\),writeln\(GL_word\)\)$/);
   const b = breasonGoal('LucianOS/gl/meditation 2026-11-07 1500.txt', folders);
   assert.ok(b.startsWith(load + `, atomic_list_concat([Root,'/',"LucianOS/gl/meditation 2026-11-07 1500.txt"],GL_path), read_file_to_string(GL_path,GL_text,[]), `));
   assert.match(b, /As is 1, Br is As\*80, texttobr2\(u,u,GL_out,Br,\[auto,on\]\), texttobr\(u,u,GL_out,u\)$/);
