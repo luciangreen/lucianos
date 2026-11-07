@@ -195,6 +195,22 @@ git clone https://github.com/luciangreen/dancestudio
 
 For example, iEdit opens at http://localhost:4170/apps/iedit/. The platform repo ignores everything in `apps/`, so each app stays in its own repo.
 
+## Needed for Grammar Logic and Breasoning
+
+Repos needed: those two files include others, so these must sit together in Dropbox/GitHub-private2 (where lucianos) should be:
+
+```
+Algorithm-Writer-with-Lists
+Text-to-Breasonings
+listprologinterpreter
+Philosophy
+Languages
+List-Prolog-to-Prolog-Converter
+Prolog-to-List-Prolog
+SSI
+culturaltranslationtool
+```
+
 ## Next
 
 All seven apps are built. Next: try them on your Mac and iPhone and tell me what to change.
