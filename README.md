@@ -172,4 +172,4 @@ For example, iEdit opens at http://localhost:4170/apps/iedit/. The platform repo
 
 ## Next
 
-Phase 5 is fastos: optimising folders of repos with the mnns repo's optimise command, timing the tests before and after.
+Phase 6 is the intelligence layer: the Claude bridge, background diagnostics, test generation, full voice control, predicted commands, and the terminal's games and rewards. After that comes DanceStudio.
