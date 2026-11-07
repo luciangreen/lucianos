@@ -1,8 +1,37 @@
-# LucianOS suite — Phase 0 platform
+# LucianOS
 
-The shared base that LucianOS, iEdit, shellrun, the touchscreen terminal, simplug, fastos and DanceStudio all run on. It is one Node.js server that uses only Node's built-in modules, so there is nothing to install.
+LucianOS is a web desktop that runs on your Mac. You can reach it from the Mac, or from your iPhone through a tunnel. This repo has the desktop and the shared platform that every app in the suite runs on: iEdit, shellrun, the touchscreen terminal, simplug, fastos and DanceStudio. It is one Node.js server that uses only Node's built-in modules, so there is nothing to install.
 
-What Phase 0 gives you:
+## The desktop (at `/`)
+
+- **Icons:**
+  - Your `Desktop` folder appears as icons. You can choose another folder with **Go ▸ Choose desktop folder**. Installed apps appear on the right.
+  - Double-click an icon to open it. On a touchscreen, tap a selected icon.
+  - Drag icons to arrange them; their places are remembered.
+  - Drop icons on a folder, or on a folder window, to move the files there.
+  - Shift or ⌘ selects several icons. **Enter** renames the selected icon in place. **Delete** (or the Delete button) moves it to the trash after asking.
+- **What opens what:**
+
+  | You open | What happens |
+  | --- | --- |
+  | Folder | Opens in a folder window |
+  | Text, Prolog or Markdown file | Opens in iEdit, in a desktop window. Further files open in the same iEdit window |
+  | `.shellrun.json` script | Opens in shellrun and runs |
+  | `.url` or `.webloc` icon | Opens the address; suite apps such as `/apps/iedit/` open in a desktop window |
+  | Image, audio, video or PDF | Opens in a viewer |
+
+  **File ▸ New URL icon** makes a new link icon.
+- **Spotlight** (top right, ⌘K) finds apps, files by name and, with one more click, text inside files. It also answers sums as you type, for example `2 (3 + 4) ^ 2`.
+- **Tools ▸ Calculator:**
+  - Brackets `( ) [ ] { }`, spaces, `+ − × ÷ ^ %`, `mod`, `!`, `sqrt( )` and `pi`.
+  - Durations such as `2h 30m + 45 min`, and conversions such as `90 min in h`.
+  - Copy the answer with the button, or select part of it. The answer and the history stay put, even after a reload.
+- **Tools ▸ Time converter:** a date and time in one place, shown in other time zones.
+- **Windows** come back where you left them next time. On an iPhone, one window shows at a time with tabs to switch.
+
+The old platform check page is at `/check.html` (**LucianOS ▸ Platform check page**).
+
+## The platform
 
 | Service | What it does |
 | --- | --- |
@@ -14,7 +43,6 @@ What Phase 0 gives you:
 | State store | Saves open windows, unsaved work, recent folders and preferences as JSON |
 | Event bus | Apps hear about saved files, finished jobs and each other's `app.*` events |
 
-The page at `/` is a **platform check**. With it you can browse and search files, edit and save them, and run a command or a Prolog goal with live output. The real LucianOS desktop replaces it in Phase 2.
 
 ## Start (local mode)
 
@@ -76,7 +104,7 @@ api.jobs.stream(job.id, { output: ({ text }) => console.log(text), end: (s) => c
 npm test
 ```
 
-There are 33 tests. They cover sandbox escapes, symlinks, save conflicts, trash, search, the command allowlist, shell-injection attempts, interrupt, input, temporary folders, the job queue, output streaming, the Prolog command line, state, events, the local-mode guards, password login and its rate limit.
+There are 40 tests. They cover the calculator, durations and time zones, plus sandbox escapes, symlinks, save conflicts, trash, search, the command allowlist, shell-injection attempts, interrupt, input, temporary folders, the job queue, output streaming, the Prolog command line, state, events, the local-mode guards, password login and its rate limit.
 
 ## Adding the apps
 
@@ -94,6 +122,6 @@ git clone https://github.com/luciangreen/dancestudio
 
 For example, iEdit opens at http://localhost:4170/apps/iedit/. The platform repo ignores everything in `apps/`, so each app stays in its own repo.
 
-## Next (Phase 1)
+## Next
 
-shellrun (`shellrunscriptmaker`) and iEdit, built on this API in their own repos.
+Phase 3 is the touchscreen terminal and the character service. Phase 4 adds the desktop's workflow checklist, daily workflows, and Grammar Logic and Music-Composer.

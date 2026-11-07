@@ -122,9 +122,10 @@ function serveStatic(req, res, pathname) {
     'Content-Type': type,
     'Cache-Control': 'no-cache',
     'X-Content-Type-Options': 'nosniff',
-    'X-Frame-Options': 'DENY',
+    // Apps may be shown inside LucianOS desktop windows (same origin only).
+    'X-Frame-Options': 'SAMEORIGIN',
     'Content-Security-Policy':
-      "default-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self'; frame-ancestors 'none'"
+      "default-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self'; frame-src 'self'; frame-ancestors 'self'"
   });
   if (req.method === 'HEAD') return res.end();
   fs.createReadStream(abs).pipe(res);
