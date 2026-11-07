@@ -178,6 +178,7 @@ There are 76 tests. They cover the Claude bridge (with a stand-in API: confirmat
 Each app has its own repo and runs inside this platform. To add one, clone it into `apps/`. It then appears at `/apps/<name>/`:
 
 ```sh
+git clone https://github.com/luciangreen/lucianos
 cd lucianos/apps
 git clone https://github.com/luciangreen/iedit
 git clone https://github.com/luciangreen/shellrunscriptmaker
