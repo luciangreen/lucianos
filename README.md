@@ -27,6 +27,17 @@ LucianOS is a web desktop that runs on your Mac. You can reach it from the Mac, 
   - Durations such as `2h 30m + 45 min`, and conversions such as `90 min in h`.
   - Copy the answer with the button, or select part of it. The answer and the history stay put, even after a reload.
 - **Tools ▸ Time converter:** a date and time in one place, shown in other time zones.
+- **The character** (bottom right; **Tools ▸ Show or hide the character**) is a talking photo, ported from [retromr](https://github.com/luciangreen/retromr). It uses [newos](https://github.com/luciangreen/newos)'s voice with lip-sync.
+  - **Talking to it:** tap 🎤 and speak, or type.
+  - **Setting it up:** ⚙ chooses your photo, name, voice and speed. Until you choose a photo, it shows a drawn face. Every app in the suite shares the same character.
+  - **What it understands:**
+    - "open iEdit", "open notes"
+    - "go to Projects", "go up", "go home", "what's here"
+    - "run hello", "find plan"
+    - "what is open bracket 1 plus 2 close bracket squared", "what time is it"
+    - "brainstorm time travel" starts `LucianOS/brainstorm/time-travel.md` and opens it.
+    - "breason file.txt" opens your Breasoning script in shellrun.
+  - On a phone it starts as a small face bubble, so it doesn't cover the screen.
 - **Windows** come back where you left them next time. On an iPhone, one window shows at a time with tabs to switch.
 
 The old platform check page is at `/check.html` (**LucianOS ▸ Platform check page**).
@@ -104,7 +115,7 @@ api.jobs.stream(job.id, { output: ({ text }) => console.log(text), end: (s) => c
 npm test
 ```
 
-There are 40 tests. They cover the calculator, durations and time zones, plus sandbox escapes, symlinks, save conflicts, trash, search, the command allowlist, shell-injection attempts, interrupt, input, temporary folders, the job queue, output streaming, the Prolog command line, state, events, the local-mode guards, password login and its rate limit.
+There are 45 tests. They cover the character's command grammar (spoken maths, fuzzy names), the calculator, durations and time zones, plus sandbox escapes, symlinks, save conflicts, trash, search, the command allowlist, shell-injection attempts, interrupt, input, temporary folders, the job queue, output streaming, the Prolog command line, state, events, the local-mode guards, password login and its rate limit.
 
 ## Adding the apps
 
@@ -124,4 +135,4 @@ For example, iEdit opens at http://localhost:4170/apps/iedit/. The platform repo
 
 ## Next
 
-Phase 3 is the touchscreen terminal and the character service. Phase 4 adds the desktop's workflow checklist, daily workflows, and Grammar Logic and Music-Composer.
+Phase 4 adds the desktop's workflow checklist, daily workflows, Grammar Logic and Music-Composer, and simplug's comments.

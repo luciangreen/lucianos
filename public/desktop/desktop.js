@@ -5,6 +5,8 @@ import { COMMON_ZONES, convertTime, evaluate, looksLikeSum } from './calc.js';
 import { appInfo, displayName, glyphFor, kindOf, makeUrlFile, parseUrlFile, safeUrl } from './filetypes.js';
 import { IconView, clearSelection, currentSelection, refreshFolder } from './icons.js';
 import { activeWindow, createWindow, renderTabs, setOnChange, windows } from './wm.js';
+import { mountCharacter } from '/shared/character/character.js';
+import { bestMatch } from '/shared/character/commands.js';
 
 const MAC = /Mac|iPhone|iPad/.test(navigator.platform);
 const MOD = MAC ? '⌘' : 'Ctrl+';
@@ -151,6 +153,7 @@ function openFolder(path, geometry = null) {
     saveState();
   };
   win.view = view;
+  win.go = go;
   const close = win.close;
   win.close = async () => {
     stopWatch?.();
@@ -496,7 +499,8 @@ function buildMenus() {
   buildMenu('tools', [
     { label: '🧮  Calculator', action: () => calculatorWindow() },
     { label: '🕒  Time converter', action: () => timeWindow() },
-    { label: '🔎  Spotlight', key: `${MOD}K`, action: () => $('spot').focus() }
+    { label: '🔎  Spotlight', key: `${MOD}K`, action: () => $('spot').focus() },
+    { label: '🙂  Show or hide the character', action: toggleCharacter }
   ]);
 }
 
@@ -521,6 +525,125 @@ document.addEventListener('keydown', (e) => {
     const w = activeWindow();
     (w?.kind === 'folder' ? w.view : desktopView).selectAll();
   } else if (e.key === 'Escape') clearSelection();
+});
+
+// ---------------- the character ----------------
+let character = null;
+
+async function toggleCharacter() {
+  if (character) {
+    character.destroy();
+    character = null;
+    state.characterHidden = true;
+  } else {
+    state.characterHidden = false;
+    await startCharacter();
+  }
+  saveState();
+}
+
+// The folder the character is "in": the active folder window, else the desktop folder.
+function hereFolder() {
+  const w = activeWindow();
+  return w?.kind === 'folder' ? w.data.path : state.desktopFolder ?? '';
+}
+
+async function namesHere() {
+  return (await api.files.list(hereFolder())).entries;
+}
+
+async function handleCommand(cmd) {
+  const here = hereFolder();
+  switch (cmd.intent) {
+    case 'list': {
+      const entries = await namesHere();
+      const shown = entries.slice(0, 12).map((e) => displayName(e)).join(', ');
+      return `You're in ${here || 'Home'}. ${entries.length ? `There ${entries.length === 1 ? 'is' : 'are'} ${entries.length} item${entries.length === 1 ? '' : 's'}: ${shown}${entries.length > 12 ? ', and more' : ''}.` : 'It is empty.'}`;
+    }
+    case 'home':
+      openFolder('');
+      return 'Here is your home folder.';
+    case 'up': {
+      const w = activeWindow();
+      if (w?.kind !== 'folder') return 'Open a folder window first, then I can go up.';
+      if (!w.data.path) return "You're already at the top.";
+      w.go(w.data.path.split('/').slice(0, -1).join('/'));
+      return `Up to ${w.data.path || 'Home'}.`;
+    }
+    case 'goto': {
+      const dirs = (await namesHere()).filter((e) => e.type === 'dir');
+      const hit = bestMatch(cmd.name, dirs) ?? bestMatch(cmd.name, state.recent.map((f) => ({ name: f.split('/').pop() || 'Home', path: f })));
+      if (!hit) return `I can't see a folder called ${cmd.name} here.`;
+      const w = activeWindow();
+      if (w?.kind === 'folder') w.go(hit.path);
+      else openFolder(hit.path);
+      return `Opening ${hit.name}.`;
+    }
+    case 'open': {
+      const app = bestMatch(cmd.name, info.apps.map((id) => ({ name: appInfo(id).name, id })));
+      const file = bestMatch(cmd.name, await namesHere());
+      if (app && (!file || app.name.toLowerCase() === cmd.name)) {
+        openApp(app.id);
+        return `Opening ${app.name}.`;
+      }
+      if (file) {
+        openEntry(file);
+        return `Opening ${displayName(file)}.`;
+      }
+      if (/^(calculator|calc)$/.test(cmd.name)) { calculatorWindow(); return 'Here is the calculator.'; }
+      if (/time( converter)?/.test(cmd.name)) { timeWindow(); return 'Here is the time converter.'; }
+      return `I can't find ${cmd.name} here. Try: find ${cmd.name}.`;
+    }
+    case 'run': {
+      const scripts = (await namesHere()).filter((e) => kindOf(e) === 'script');
+      let hit = bestMatch(cmd.name, scripts);
+      if (!hit) {
+        const lib = await api.files.list('LucianOS/shellrun').catch(() => ({ entries: [] }));
+        hit = bestMatch(cmd.name, lib.entries.filter((e) => kindOf(e) === 'script'));
+      }
+      if (!hit) return `I can't find a script called ${cmd.name}.`;
+      openEntry(hit);
+      return `Running ${displayName(hit)} in shellrun.`;
+    }
+    case 'find': {
+      $('spot').value = cmd.query;
+      await spotlight(false);
+      const n = spotItems.length;
+      return n ? `I found ${n} match${n === 1 ? '' : 'es'} for ${cmd.query}. They're in the spotlight list.` : `Nothing called ${cmd.query}. I can search inside files too: press the last line in the list.`;
+    }
+    case 'breason': {
+      const lib = await api.files.list('LucianOS/shellrun').catch(() => ({ entries: [] }));
+      const script = bestMatch('breasoning', lib.entries.filter((e) => kindOf(e) === 'script'));
+      if (!script) return 'Make a Breasoning script in shellrun first. There is an example in the shellrun repo.';
+      openApp('shellrunscriptmaker', { open: script.path });
+      return `I've opened your breasoning script. It works on file.txt in Text-to-Breasonings, so put ${cmd.name} there, then press Run.`;
+    }
+    case 'brainstorm': {
+      const safe = cmd.topic.replace(/[^\w -]+/g, '').trim().replace(/\s+/g, '-') || 'ideas';
+      const path = `LucianOS/brainstorm/${safe}.md`;
+      const exists = await api.files.read(path).then(() => true, () => false);
+      if (!exists) await api.files.write(path, `# ${cmd.topic}\n\n- \n`, { mkdirs: true });
+      openApp('iedit', { open: path });
+      return exists ? `Here are your notes on ${cmd.topic}.` : `I've started a brainstorm page for ${cmd.topic}. Add a line for each idea.`;
+    }
+    default:
+      return null;
+  }
+}
+
+async function startCharacter() {
+  character = await mountCharacter({
+    handle: handleCommand,
+    greeting: 'Ask me to open things, go to folders, find files or do sums.'
+  });
+}
+
+// Apps in windows (e.g. the touchscreen terminal) ask the desktop to open things.
+addEventListener('message', (e) => {
+  if (e.origin !== location.origin || e.data?.type !== 'lucianos.open' || typeof e.data.path !== 'string') return;
+  const path = e.data.path;
+  if (e.data.editor) return openApp('iedit', { open: path });
+  openEntry({ type: e.data.isDir ? 'dir' : 'file', path, name: path.split('/').pop(), size: 0 });
 });
 
 // ---------------- clock ----------------
@@ -575,6 +698,8 @@ async function init() {
   }
   restoring = false;
   renderTabs();
+
+  if (!state.characterHidden) startCharacter().catch((err) => showError(`Character: ${err.message}`));
 
   const params = new URLSearchParams(location.search);
   if (params.get('open')) openEntry({ type: 'file', path: params.get('open'), name: params.get('open').split('/').pop(), size: 0 });

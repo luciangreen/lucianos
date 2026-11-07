@@ -1,0 +1,32 @@
+.lc-char { position: fixed; right: 16px; bottom: 16px; width: 260px; z-index: 200000; background: #0b0b10; color: #f3efe6; border-radius: 16px; box-shadow: 0 12px 36px rgb(0 0 0 / 35%); overflow: hidden; font: 14px/1.4 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+.lc-char .hidden { display: none !important; }
+.lc-head { display: flex; align-items: center; gap: 4px; padding: 4px 6px 4px 12px; cursor: grab; touch-action: none; user-select: none; }
+.lc-name { font-weight: 600; }
+.lc-spacer { flex: 1; }
+.lc-btn { min-width: 34px; min-height: 34px; border: 0; border-radius: 10px; background: rgb(255 255 255 / 10%); color: inherit; font-size: 16px; cursor: pointer; }
+.lc-btn:hover { background: rgb(255 255 255 / 20%); }
+.lc-btn.on { background: #1f8f7a; box-shadow: 0 0 0 2px #7ff0d8 inset; }
+.lc-body { display: grid; gap: 6px; padding: 0 8px 8px; }
+.lc-face { width: 100%; height: 260px; border-radius: 12px; display: block; cursor: default; }
+.lc-heard { font-size: 12.5px; color: #b9b2a4; min-height: 1.2em; }
+.lc-said { font-size: 14px; min-height: 1.4em; max-height: 6.5em; overflow: auto; }
+.lc-form { display: flex; gap: 6px; }
+.lc-input { flex: 1; min-width: 0; min-height: 36px; border: 0; border-radius: 999px; padding: 0 12px; background: rgb(255 255 255 / 14%); color: inherit; font: inherit; outline: none; }
+.lc-input::placeholder { color: #9d978b; }
+.lc-settings { display: grid; gap: 6px; padding: 8px; border-radius: 10px; background: rgb(255 255 255 / 7%); }
+.lc-settings button { min-height: 34px; border: 0; border-radius: 8px; background: rgb(255 255 255 / 14%); color: inherit; cursor: pointer; font: inherit; }
+.lc-settings label { display: grid; grid-template-columns: 54px 1fr; align-items: center; gap: 6px; font-size: 13px; }
+.lc-settings input[type='text'], .lc-settings select { min-height: 30px; border-radius: 6px; border: 0; padding: 0 6px; background: rgb(255 255 255 / 85%); color: #111; font: inherit; min-width: 0; }
+.lc-note { margin: 0; font-size: 11.5px; color: #9d978b; }
+/* minimised: just the face in a circle */
+.lc-char.min { width: 84px; border-radius: 50%; }
+.lc-char.min .lc-head { position: absolute; inset: auto 0 0 0; justify-content: center; padding: 0; background: transparent; opacity: 0; }
+.lc-char.min:hover .lc-head { opacity: 1; }
+.lc-char.min .lc-head > :not(.lc-btn:last-child) { display: none; }
+.lc-char.min .lc-body { padding: 0; }
+.lc-char.min .lc-face { height: 84px; border-radius: 50%; cursor: pointer; }
+.lc-char.min .lc-heard, .lc-char.min .lc-said, .lc-char.min .lc-form, .lc-char.min .lc-settings { display: none; }
+@media (max-width: 760px) {
+  .lc-char:not(.min) { width: min(300px, calc(100vw - 24px)); }
+  .lc-face { height: 200px; }
+}
