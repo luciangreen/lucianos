@@ -3,7 +3,7 @@ import { api } from '/shared/api.js';
 import { $, el } from './dom.js';
 import { COMMON_ZONES, convertTime, evaluate, looksLikeSum } from './calc.js';
 import { appInfo, displayName, glyphFor, kindOf, makeUrlFile, parseUrlFile, safeUrl } from './filetypes.js';
-import { IconView, clearSelection, currentSelection, refreshFolder } from './icons.js';
+import { IconView, clearSelection, clipboardCount, copyEntries, copySelection, currentSelection, pasteInto, refreshFolder } from './icons.js';
 import { activeWindow, createWindow, renderTabs, setOnChange, windows } from './wm.js';
 import { mountCharacter } from '/shared/character/character.js';
 import { bestMatch, parseCommand } from '/shared/character/commands.js';
@@ -530,6 +530,25 @@ async function chooseDesktopFolder() {
   saveState();
 }
 
+// ---------------- copying files ----------------
+function copyFiles() {
+  const n = copySelection();
+  notice(n ? `Copied ${n} item${n === 1 ? '' : 's'}: paste with ${MOD}V into a folder window or the desktop` : 'Select files or folders to copy');
+}
+async function pasteFiles() {
+  if (!clipboardCount()) return notice('Nothing to paste: copy some files first');
+  const into = hereFolder();
+  const made = await pasteInto(into, showError);
+  if (made.length) notice(`Pasted ${made.join(', ')} into ${into || 'Home'}`, 'ok');
+}
+async function duplicateFiles() {
+  const { view, entries } = currentSelection();
+  const files = entries.filter((e) => e.type !== 'app');
+  if (!view || !files.length) return notice('Select files or folders to duplicate');
+  const made = await copyEntries(files, view.folder, showError);
+  if (made.length) notice(`Made ${made.join(', ')}`, 'ok');
+}
+
 function buildMenus() {
   buildMenu('lucianos', [
     { label: 'About LucianOS', action: () => alert(`LucianOS suite (${info.mode} mode)\nSuite folder: ${info.rootName}\nApps: ${info.apps.map((a) => appInfo(a).name).join(', ') || 'none yet'}`) },
@@ -548,6 +567,15 @@ function buildMenus() {
     { label: 'Move to trash', key: '⌫', action: trashSelection },
     null,
     { label: 'Close window', action: () => activeWindow()?.close() }
+  ]);
+  buildMenu('edit', [
+    { label: 'Copy', key: `${MOD}C`, action: copyFiles },
+    { label: 'Paste', key: `${MOD}V`, action: pasteFiles },
+    { label: 'Duplicate', key: `${MOD}D`, action: duplicateFiles },
+    null,
+    { label: 'Select all', key: `${MOD}A`, action: () => { const w = activeWindow(); (w?.kind === 'folder' ? w.view : desktopView).selectAll(); } },
+    null,
+    { label: 'Tip: hold ⌥ Option while dragging to copy, or drop files on iEdit to insert them', action: () => {} }
   ]);
   buildGoMenu();
   buildMenu('apps', info.apps.length ? info.apps.map((id) => ({ label: `${appInfo(id).glyph}  ${appInfo(id).name}`, action: () => openApp(id) }))
@@ -582,6 +610,9 @@ document.addEventListener('keydown', (e) => {
   if ((e.key === 'Delete' || e.key === 'Backspace') && view) { e.preventDefault(); trashSelection(); }
   else if (e.key === 'Enter' && view) { e.preventDefault(); renameSelection(); }
   else if (mod && e.key.toLowerCase() === 'o') { e.preventDefault(); openSelection(); }
+  else if (mod && e.key.toLowerCase() === 'c' && view && !window.getSelection()?.toString()) { e.preventDefault(); copyFiles(); }
+  else if (mod && e.key.toLowerCase() === 'v') { e.preventDefault(); pasteFiles(); }
+  else if (mod && e.key.toLowerCase() === 'd' && view) { e.preventDefault(); duplicateFiles(); }
   else if (mod && e.key === 'ArrowDown') { e.preventDefault(); openSelection(); }
   else if (mod && e.key.toLowerCase() === 'a') {
     e.preventDefault();

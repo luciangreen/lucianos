@@ -31,6 +31,7 @@ body.desktop-page input, body.desktop-page textarea, .calcresult, .zones .mono {
 .desktop { position: relative; flex: 1; overflow: hidden; background: radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--accent) 10%, var(--bg)), var(--bg) 70%); }
 .desktop-icons { position: absolute; inset: 0; }
 .icons-free .icon { position: absolute; }
+.icons-grid .icon { position: relative; }
 .icon { width: 88px; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 4px; border-radius: 8px; cursor: default; touch-action: none; outline: none; }
 .icon .glyph { font-size: 38px; line-height: 1.1; pointer-events: none; }
 .icon .label { font-size: 12.5px; text-align: center; overflow-wrap: anywhere; max-height: 3.1em; overflow: hidden; padding: 0 3px; border-radius: 4px; pointer-events: none; }
@@ -151,3 +152,8 @@ body.dragging-window iframe { pointer-events: none; }
 .progform label { display: grid; grid-template-columns: 70px 1fr; align-items: center; gap: 6px; font-size: 13px; color: var(--quiet); }
 .progform input { min-height: 32px; color: var(--ink); }
 .progout { flex: 1; min-height: 120px; max-height: none; }
+
+/* copying (⌥-drag) and dropping files on iEdit */
+body.dragging-icons.copying .icon.dragging::after { content: '+'; position: absolute; top: 2px; right: 14px; width: 20px; height: 20px; border-radius: 50%; background: #2a8a4a; color: white; font: 700 16px/20px system-ui; text-align: center; }
+body.dragging-icons:not(.copying) .iconsbox, body.dragging-icons:not(.copying) .desktop-icons { cursor: grabbing; }
+.win.drop-into { outline: 3px solid var(--accent); outline-offset: -1px; }

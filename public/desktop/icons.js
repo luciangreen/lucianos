@@ -1,6 +1,9 @@
 // Icon views: the desktop (icons placed freely, positions remembered) and folder windows (a grid).
 // Click selects (Shift/⌘ adds), double-click opens, drag moves icons or drops them into a folder.
+// Hold ⌥ Option (Alt) while dropping to copy instead. Drop files on an iEdit window to put
+// their contents into it.
 import { api } from '/shared/api.js';
+import { copyPlan } from './copy-lib.js';
 import { el } from './dom.js';
 import { appInfo, displayName, glyphFor, kindOf } from './filetypes.js';
 
@@ -34,6 +37,57 @@ export function viewsShowing(folder) {
 
 export function refreshFolder(folder) {
   for (const v of viewsShowing(folder)) v.load();
+}
+
+// Copies entries into `dest`, renaming to "name copy.ext" where a name is taken.
+// Returns the names made, and reports failures through onError.
+export async function copyEntries(entries, dest, onError = console.error) {
+  const files = entries.filter((e) => e.type !== 'app');
+  const taken = new Set((await api.files.list(dest).catch(() => ({ entries: [] }))).entries.map((e) => e.name));
+  const made = [];
+  const errors = [];
+  for (const step of copyPlan(files, dest, taken)) {
+    try {
+      await api.files.copy(step.from, step.to);
+      made.push(step.name);
+    } catch (err) {
+      errors.push(`${step.from.split('/').pop()}: ${err.message}`);
+    }
+  }
+  if (errors.length) onError(`Could not copy:\n${errors.join('\n')}`);
+  refreshFolder(dest);
+  return made;
+}
+
+// ⌘C / ⌘V for files: remembers what to copy; pasting copies it into a folder.
+let clipboard = [];
+export function copySelection() {
+  clipboard = currentSelection().entries.filter((e) => e.type !== 'app').map((e) => ({ path: e.path, name: e.name, type: e.type }));
+  return clipboard.length;
+}
+export const clipboardCount = () => clipboard.length;
+export function pasteInto(folder, onError) {
+  return copyEntries(clipboard, folder, onError);
+}
+
+// Dropping files on an iEdit window (an iframe of /apps/iedit/) hands their paths to iEdit.
+function ieditFrameAt(x, y) {
+  const under = document.elementFromPoint(x, y);
+  return under?.tagName === 'IFRAME' && /\/apps\/iedit\//.test(under.src) ? under : null;
+}
+let hoverFrame = null;
+function dragOverIedit(x, y) {
+  const frame = ieditFrameAt(x, y);
+  if (hoverFrame && hoverFrame !== frame) {
+    hoverFrame.closest('.win')?.classList.remove('drop-into');
+    hoverFrame.contentWindow?.postMessage({ type: 'iedit.dragLeave' }, location.origin);
+  }
+  hoverFrame = frame;
+  if (!frame) return false;
+  const r = frame.getBoundingClientRect();
+  frame.closest('.win')?.classList.add('drop-into');
+  frame.contentWindow?.postMessage({ type: 'iedit.dragOver', x: x - r.left, y: y - r.top }, location.origin);
+  return true;
 }
 
 export class IconView {
@@ -142,20 +196,23 @@ export class IconView {
           document.body.classList.add('dragging-icons');
         }
         for (const n of moving) n.style.transform = `translate(${dx}px, ${dy}px)`;
+        document.body.classList.toggle('copying', ev.altKey);
+        document.body.classList.toggle('into-iedit', dragOverIedit(ev.clientX, ev.clientY));
       };
       const up = async (ev) => {
         node.removeEventListener('pointermove', move);
         node.removeEventListener('pointerup', up);
         node.removeEventListener('pointercancel', up);
         if (!moving) return;
-        document.body.classList.remove('dragging-icons');
+        document.body.classList.remove('dragging-icons', 'copying', 'into-iedit');
+        dragOverIedit(-1, -1);
         const dx = ev.clientX - start.x;
         const dy = ev.clientY - start.y;
         for (const n of moving) {
           n.classList.remove('dragging');
           n.style.transform = '';
         }
-        await this.drop(ev.clientX, ev.clientY, moving.map((n) => n.dataset.key), dx, dy);
+        await this.drop(ev.clientX, ev.clientY, moving.map((n) => n.dataset.key), dx, dy, { copy: ev.altKey });
       };
       node.addEventListener('pointermove', move);
       node.addEventListener('pointerup', up);
@@ -163,15 +220,44 @@ export class IconView {
     });
   }
 
-  async drop(x, y, keys, dx, dy) {
+  async drop(x, y, keys, dx, dy, { copy = false } = {}) {
     const under = document.elementFromPoint(x, y);
     const moved = this.entries.filter((e) => keys.includes(e.key));
+    const frame = ieditFrameAt(x, y);
+    if (frame) {
+      const paths = moved.filter((e) => e.type === 'file').map((e) => e.path);
+      if (!paths.length) return this.onError('Only files can go into iEdit: drop a file, not a folder or app.');
+      const r = frame.getBoundingClientRect();
+      frame.contentWindow.postMessage({ type: 'iedit.insertFiles', paths, x: x - r.left, y: y - r.top }, location.origin);
+      return;
+    }
     const folderIcon = under?.closest('.icon[data-kind="dir"]');
     const targetView = [...views].find((v) => v.container.contains(under));
     let dest = null;
     if (folderIcon && !keys.includes(folderIcon.dataset.key)) dest = folderIcon.dataset.key;
     else if (targetView && targetView !== this && targetView.folder !== this.folder) dest = targetView.folder;
 
+    if (copy) {
+      // ⌥-drop: copy into the folder or window under the pointer, or duplicate here
+      const into = dest ?? (targetView ? targetView.folder : this.folder);
+      const made = await copyEntries(moved, into, this.onError);
+      if (into === this.folder && this.free && made.length) {
+        // put the duplicates where they were dropped
+        const map = { ...this.positions.get(this.folder) };
+        const copied = moved.filter((e) => e.type !== 'app');
+        made.forEach((name, i) => {
+          const n = this.container.querySelector(`.icon[data-key="${CSS.escape(copied[i]?.key ?? '')}"]`);
+          if (!n) return;
+          map[name] = {
+            x: Math.max(0, Math.min(this.container.clientWidth - CELL_W, parseInt(n.style.left, 10) + dx)),
+            y: Math.max(0, Math.min(this.container.clientHeight - CELL_H, parseInt(n.style.top, 10) + dy))
+          };
+        });
+        this.positions.save(this.folder, map);
+        await this.load();
+      }
+      return;
+    }
     if (dest !== null) {
       const files = moved.filter((e) => e.type !== 'app');
       const errors = [];
