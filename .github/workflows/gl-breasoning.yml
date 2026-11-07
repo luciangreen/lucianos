@@ -32,7 +32,7 @@ jobs:
         run: |
           mkdir -p "$RUNNER_TEMP/root/Dropbox/GitHub-private2"
           cd "$RUNNER_TEMP/root/Dropbox/GitHub-private2"
-          for r in Algorithm-Writer-with-Lists Text-to-Breasonings listprologinterpreter; do
+          for r in Algorithm-Writer-with-Lists Text-to-Breasonings listprologinterpreter Philosophy; do
             git clone --depth 1 "https://github.com/luciangreen/$r"
           done
       - name: Grammar Logic, then breasoning
