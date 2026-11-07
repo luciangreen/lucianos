@@ -26,13 +26,13 @@ jobs:
         run: |
           sudo apt-add-repository --yes ppa:swi-prolog/stable
           sudo apt-get update
-          sudo apt-get install --yes swi-prolog-nox
+          sudo apt-get install --yes swi-prolog
           swipl --version
       - name: Check out the Prolog repos side by side
         run: |
           mkdir -p "$RUNNER_TEMP/root/Dropbox/GitHub-private2"
           cd "$RUNNER_TEMP/root/Dropbox/GitHub-private2"
-          for r in Algorithm-Writer-with-Lists Text-to-Breasonings listprologinterpreter Philosophy; do
+          for r in Algorithm-Writer-with-Lists Text-to-Breasonings listprologinterpreter Philosophy Languages List-Prolog-to-Prolog-Converter Prolog-to-List-Prolog SSI culturaltranslationtool; do
             git clone --depth 1 "https://github.com/luciangreen/$r"
           done
       - name: Grammar Logic, then breasoning
