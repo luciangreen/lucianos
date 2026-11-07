@@ -212,7 +212,7 @@ culturaltranslationtool
 ```
 
 * NB lucianos works with GL and Breasoning by being at `~/Library/CloudStorage/Dropbox/GitHub-private2/lucianos/` where `“~/Dropbox is a symlink to ~/Library/CloudStorage/Dropbox”`. This is accomplished with the commands:
-* Check first that ~/Dropbox doesn’t already exist, because the Dropbox app sometimes creates it:
+* Check first that `~/Dropbox` doesn’t already exist, because the Dropbox app sometimes creates it:
 
 ```sh
 # Run from any folder
