@@ -60,7 +60,7 @@ LucianOS is a web desktop that runs on your Mac. You can reach it from the Mac, 
 - **Grammar Logic** (Tools ▸ Grammar Logic…, or say "grammar logic on meditation"):
   - It asks for a topic and runs Grammar Logic the way `br_16k_args_algs` in `find_char_map.pl` (private repo) does. The topic goes on its own line, repeated and cut to 200 words, then in Algorithm-Writer-with-Lists:
     `As is 4*50, grammar_logic_to_alg1(Essay_0,As,GL_out1), term_to_atom(GL_out1,GL_out2), string_atom(GL_out,GL_out2)`
-  - The files are loaded as `find_char_map.pl` gets them through `cgpt_combophil_analogy.pl`: `Text-to-Breasonings/text_to_breasonings.pl` and `Algorithm-Writer-with-Lists/grammar_logic_to_alg1.pl`. LucianOS writes a small loader that includes both, `LucianOS/prolog/gl_and_breasoning.pl`, so shared files load once.
+  - The files are loaded as `find_char_map.pl` gets them through `cgpt_combophil_analogy.pl`: `Text-to-Breasonings/text_to_breasonings.pl` and `Algorithm-Writer-with-Lists/grammar_logic_to_alg1.pl`. Prolog writes a small loader that includes both, `LucianOS/prolog/gl_and_breasoning.pl`, so shared files load once. All paths are absolute, from the suite folder, so they still work when Dropbox is a link (as on a Mac, into `Library/CloudStorage`).
   - Those files also need listprologinterpreter, Philosophy, Languages, List-Prolog-to-Prolog-Converter, Prolog-to-List-Prolog, SSI and culturaltranslationtool next to them, as in your `GitHub-private2` folder.
   - It saves the result one item per line in `LucianOS/gl/<topic> <date time>.txt` and opens it in iEdit.
   - When you've finished the file, **Breason it** reads it as `GL_out` and runs, in Text-to-Breasonings:
