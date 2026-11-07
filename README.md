@@ -197,7 +197,7 @@ For example, iEdit opens at http://localhost:4170/apps/iedit/. The platform repo
 
 ## Needed for Grammar Logic and Breasoning
 
-Repos needed: those two files include others, so these must sit together in Dropbox/GitHub-private2 (where lucianos) should be:
+Repos needed: those two files include others, so these must sit together in Dropbox/GitHub-private2 (where lucianos should be):
 
 ```
 Algorithm-Writer-with-Lists
