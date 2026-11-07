@@ -1,0 +1,11 @@
+.cl-dialog { border: 1px solid var(--line, #ddd); border-radius: 12px; padding: 0; width: min(760px, 96vw); background: var(--panel, #fff); color: var(--ink, #111); }
+.cl-dialog::backdrop { background: rgb(0 0 0 / 40%); }
+.cl-dialog form { display: grid; gap: 10px; padding: 16px; }
+.cl-dialog h2 { margin: 0; font-size: 17px; }
+.cl-pre { max-height: 45vh; overflow: auto; margin: 0; padding: 10px; border-radius: 8px; background: var(--bg, #f6f5f2); font: 12.5px/1.45 var(--mono, monospace); white-space: pre-wrap; overflow-wrap: anywhere; }
+.cl-meta { margin: 0; font-size: 12.5px; color: var(--quiet, #666); }
+.cl-row { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+.cl-settings { display: grid; gap: 10px; padding: 12px; }
+.cl-settings label { display: grid; gap: 3px; font-size: 13px; color: var(--quiet, #666); }
+.cl-settings label.cl-check { display: flex; align-items: center; gap: 6px; }
+.cl-settings input[type='password'], .cl-settings input[type='number'], .cl-settings select { min-height: 34px; color: var(--ink, #111); }

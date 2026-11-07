@@ -28,6 +28,111 @@ async function call(method, url, body, headers = {}) {
 
 const q = (params) => new URLSearchParams(Object.entries(params).filter(([, v]) => v !== undefined && v !== null)).toString();
 
+// ---------------------------------------------------------------- live streams
+// All live streams (folder watches, job output, events) share one connection per desktop:
+// browsers allow only six connections per site over plain HTTP. App windows are
+// same-origin frames, so they borrow the top page's hub.
+function makeHub() {
+  let id = null;
+  let es = null;
+  let seq = 0;
+  const subs = new Map(); // sid -> { url, on(event, data), end(), resume }
+  const post = (path, body) => fetch(path, { method: 'POST', headers: { 'X-LucianOS': '1', 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify(body) });
+  const openOne = (sid, s) =>
+    post(`/api/mux/${id}/open`, { sid, url: s.url }).then(async (r) => {
+      if (!r.ok) {
+        const msg = (await r.json().catch(() => ({}))).error ?? r.statusText;
+        s.on('error', JSON.stringify({ message: msg }));
+        finish(sid);
+      }
+    }, () => {});
+  const finish = (sid) => {
+    const s = subs.get(sid);
+    if (!s) return;
+    subs.delete(sid);
+    try { s.end(); } catch {}
+  };
+  function connect() {
+    es = new EventSource('/api/mux');
+    es.addEventListener('hello', (e) => {
+      id = JSON.parse(e.data).id;
+      for (const [sid, s] of subs) {
+        if (s.opened && !s.resume) {
+          // job output can't be resumed without repeating it
+          s.on('error', JSON.stringify({ message: 'The connection to LucianOS was lost' }));
+          finish(sid);
+        } else {
+          s.opened = true;
+          openOne(sid, s);
+        }
+      }
+    });
+    es.addEventListener('x', (e) => {
+      const m = JSON.parse(e.data);
+      const s = subs.get(m.sid);
+      if (!s) return;
+      if (m.end) return finish(m.sid);
+      try { s.on(m.event, m.data); } catch {}
+    });
+  }
+  return {
+    open(url, on, end, { resume = false } = {}) {
+      if (!es) connect();
+      const sid = `s${++seq}`;
+      const s = { url, on, end, resume, opened: false };
+      subs.set(sid, s);
+      if (id) {
+        s.opened = true;
+        openOne(sid, s);
+      }
+      return () => {
+        if (!subs.has(sid)) return;
+        subs.delete(sid);
+        if (id) post(`/api/mux/${id}/close`, { sid }).catch(() => {});
+      };
+    }
+  };
+}
+
+function hub() {
+  let top = null;
+  try {
+    if (window.top !== window && window.top.location.origin === location.origin) top = window.top;
+  } catch {}
+  const host = top ?? window;
+  if (!host.__lucianosHub) host.__lucianosHub = makeHub();
+  return host.__lucianosHub;
+}
+
+// An EventSource look-alike carried by the hub. Frames in a closed frame (iframe) stop with it.
+function liveStream(url, { resume = false } = {}) {
+  const handlers = new Map();
+  let closed = false;
+  const target = {
+    onmessage: null,
+    onerror: null,
+    addEventListener(name, fn) {
+      if (!handlers.has(name)) handlers.set(name, new Set());
+      handlers.get(name).add(fn);
+    },
+    close() {
+      closed = true;
+      stop();
+      removeEventListener('pagehide', target.close);
+    }
+  };
+  const deliver = (event, data) => {
+    if (closed) return;
+    const e = { data, type: event };
+    if (event === 'message') target.onmessage?.(e);
+    if (event === 'error') target.onerror?.(e);
+    for (const fn of handlers.get(event) ?? []) fn(e);
+  };
+  const stop = hub().open(url, deliver, () => {}, { resume });
+  addEventListener('pagehide', target.close);
+  return target;
+}
+
 export const api = {
   session: () => call('GET', '/api/session'),
   login: (password) => call('POST', '/api/login', { password }),
@@ -49,7 +154,7 @@ export const api = {
     search: (q2, opts = {}) =>
       call('GET', `/api/files/search?${q({ q: q2, path: opts.path, contents: opts.contents ? 1 : undefined, regex: opts.regex ? 1 : undefined, case: opts.caseSensitive ? 1 : undefined })}`),
     watch: (path, onChange, recursive = false) => {
-      const es = new EventSource(`/api/files/watch?${q({ path, recursive: recursive ? 1 : undefined })}`);
+      const es = liveStream(`/api/files/watch?${q({ path, recursive: recursive ? 1 : undefined })}`, { resume: true });
       es.addEventListener('change', (e) => onChange(JSON.parse(e.data)));
       return () => es.close();
     }
@@ -65,7 +170,7 @@ export const api = {
     input: (id, text) => call('POST', `/api/jobs/${id}/input`, { text }),
     // handlers: { output({stream,text}), end(summary), status(summary) }
     stream: (id, handlers) => {
-      const es = new EventSource(`/api/jobs/${id}/stream`);
+      const es = liveStream(`/api/jobs/${id}/stream`);
       for (const name of ['status', 'output', 'end']) {
         es.addEventListener(name, (e) => {
           handlers[name]?.(JSON.parse(e.data));
@@ -85,7 +190,7 @@ export const api = {
     publish: (type, data) => call('POST', '/api/events', { type, data }),
     // types: e.g. ['job.finished', 'file.'] (a trailing dot matches a prefix)
     subscribe: (types, onEvent) => {
-      const es = new EventSource(`/api/events?${q({ types: types.join(',') })}`);
+      const es = liveStream(`/api/events?${q({ types: types.join(',') })}`, { resume: true });
       es.onmessage = (e) => onEvent(JSON.parse(e.data));
       return () => es.close();
     }

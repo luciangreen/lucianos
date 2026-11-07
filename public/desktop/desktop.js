@@ -9,6 +9,8 @@ import { mountCharacter } from '/shared/character/character.js';
 import { bestMatch } from '/shared/character/commands.js';
 import { midiStats, parseMidi } from '/shared/midi.js';
 import { initWorkflows } from './workflows.js';
+import { claudeSettings } from '/shared/claude.js';
+import { initPrograms } from './programs.js';
 
 const MAC = /Mac|iPhone|iPad/.test(navigator.platform);
 const MOD = MAC ? '⌘' : 'Ctrl+';
@@ -63,6 +65,8 @@ const wf = initWorkflows({
   character: () => character,
   commentOn: (path) => commentOn(path)
 });
+
+const programs = initPrograms({ createWindow, openApp: (...a) => openApp(...a), notice, showError, info: () => info, say: (t) => character?.say(t) });
 
 // simplug's comments, spoken by the character
 async function commentOn(path) {
@@ -170,6 +174,8 @@ function openFolder(path, geometry = null) {
   const win = createWindow({ kind: 'folder', title: '', body: iconsBox, toolbar, status: el('div', { className: 'statusline' }, count), geometry, data: { path } });
   const view = new IconView({ container: iconsBox, folder: path, onOpen: openEntry, onError: showError });
   let stopWatch = null;
+  let updatePrograms = null;
+  programs.attach(win, toolbar).then((u) => { updatePrograms = u; u(path); });
   const show = () => {
     win.setTitle(path ? path.split('/').pop() : 'Home');
     crumbs.replaceChildren(el('button', { textContent: 'Home', onclick: () => go('') }),
@@ -189,6 +195,7 @@ function openFolder(path, geometry = null) {
     win.data.path = p;
     rememberFolder(p);
     show();
+    updatePrograms?.(p);
     saveState();
   };
   win.view = view;
@@ -278,6 +285,15 @@ function renameSelection() {
 function openSelection() {
   const { entries } = currentSelection();
   entries.slice(0, 8).forEach(openEntry);
+}
+
+// ---------------- Claude settings ----------------
+function claudeWindow() {
+  const existing = windows().find((w) => w.kind === 'claude');
+  if (existing) return existing.focus();
+  const body = el('div', {});
+  claudeSettings(body);
+  createWindow({ kind: 'claude', title: 'Claude settings', body, geometry: { x: 140, y: 60, w: 560, h: 500 }, data: {} });
 }
 
 // ---------------- calculator and time ----------------
@@ -541,6 +557,7 @@ function buildMenus() {
     { label: '🧠  Grammar Logic…', action: () => wf.runGL() },
     { label: "🎵  Today's music", action: () => wf.musicWindow() },
     { label: '⚙  Workflow settings', action: () => wf.settingsWindow() },
+    { label: '✳️  Claude settings', action: claudeWindow },
     null,
     { label: '🧮  Calculator', action: () => calculatorWindow() },
     { label: '🕒  Time converter', action: () => timeWindow() },
@@ -687,6 +704,7 @@ async function handleCommand(cmd) {
 async function startCharacter() {
   character = await mountCharacter({
     handle: handleCommand,
+    here: () => hereFolder(),
     greeting: 'Ask me to open things, go to folders, find files or do sums.'
   });
 }

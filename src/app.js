@@ -4,10 +4,13 @@ import http from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Auth, guardApi } from './auth.js';
+import { ClaudeBridge, claudeRoutes } from './claude.js';
+import { githubRoutes } from './github.js';
 import { EventBus, eventRoutes } from './events.js';
 import { fileRoutes } from './files.js';
 import { HttpError, readJson, sendJson, sendText } from './http-util.js';
 import { JobRunner, jobRoutes } from './jobs.js';
+import { muxRoutes } from './mux.js';
 import { prologRoutes } from './prolog.js';
 import { Router } from './router.js';
 import { Sandbox } from './sandbox.js';
@@ -22,7 +25,7 @@ const STATIC_TYPES = {
   '.webmanifest': 'application/manifest+json'
 };
 // Requests that browsers make without custom headers (EventSource, <img>, <audio>). All are read-only GETs.
-const STREAM_PATHS = [/^\/api\/events$/, /^\/api\/jobs\/[^/]+\/stream$/, /^\/api\/files\/watch$/, /^\/api\/files\/raw$/];
+const STREAM_PATHS = [/^\/api\/mux$/, /^\/api\/events$/, /^\/api\/jobs\/[^/]+\/stream$/, /^\/api\/files\/watch$/, /^\/api\/files\/raw$/];
 const OPEN_PATHS = ['/login.html', '/login.js', '/api/login', '/api/session', '/shared/style.css'];
 
 export function createApp(cfg) {
@@ -65,6 +68,10 @@ export function createApp(cfg) {
   prologRoutes(router, jobs, cfg);
   stateRoutes(router, state, bus);
   eventRoutes(router, bus);
+  const claude = new ClaudeBridge(cfg, bus);
+  claudeRoutes(router, claude);
+  githubRoutes(router, cfg);
+  muxRoutes(router);
 
   const server = http.createServer(async (req, res) => {
     const url = new URL(req.url, 'http://localhost');
@@ -100,7 +107,7 @@ export function createApp(cfg) {
     }
   });
 
-  return { server, bus, jobs, state, sandbox, auth };
+  return { server, bus, jobs, state, sandbox, auth, claude };
 }
 
 function serveStatic(req, res, pathname) {

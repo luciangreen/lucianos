@@ -38,6 +38,7 @@ LucianOS is a web desktop that runs on your Mac. You can reach it from the Mac, 
     - "brainstorm time travel" starts `LucianOS/brainstorm/time-travel.md` and opens it.
     - "breason file.txt" opens your Breasoning script in shellrun.
     - "run today's workflows", "show me the checklist", "grammar logic on pedagogy", "play today's music", "comment on notes" (with simplug)
+  - **Suggestions:** above the input it offers what you're likely to want next. It learns from what you have run before, at this time of day, in this folder, and what usually follows the last thing you did. Tap a suggestion to put it in the input, change it if you like, then send it.
   - On a phone it starts as a small face bubble, so it doesn't cover the screen.
 - **Tools ▸ Checklist:** your workflows, each with:
   - **done** (for daily items, done today)
@@ -75,6 +76,20 @@ LucianOS is a web desktop that runs on your Mac. You can reach it from the Mac, 
   - where to save Grammar Logic files and how long they are
   - the reminder times
   - the shortlist folder
+- **Programs in a folder:** a repo folder window shows a **Programs** strip.
+  - Its buttons are the commands in the README, such as `['adder.pl'].` then `add(1,2,X).`, or `swipl -s demo.pl`. It also lists start goals in the `.pl` files (`initialization`, `main`, `run`).
+  - A button opens the program in its own window. You can edit the files, goal and stack limit before running, and the window remembers your changes.
+  - **🧪 Make test file** turns the README examples into a PlUnit file (`tests/<repo>_examples_tests.pl`) and opens it in iEdit.
+  - **🩺 Check tests** runs the repo's tests: `tests/run.pl`, or PlUnit files. With **auto** ticked, they run in the background when you open the folder, at most once an hour.
+  - When tests fail, LucianOS writes instructions for Claude to `LucianOS/diagnostics/<repo> <date time>.md`, with the test output and the relevant source. You can edit the template in `programs-lib.js`.
+  - **Send to Claude…** shows exactly what will be sent and asks first. It saves Claude's suggested fix next to the instructions without applying it.
+- **Tools ▸ Claude settings:**
+  - **API key:** paste a key from console.anthropic.com. Tick **this session only** to keep a temporary key in memory, so it's forgotten when the server stops. Otherwise the key is saved in the data folder, readable only by you.
+  - **Model:** Sonnet by default.
+  - **Monthly limit:** a token limit, 1,000,000 by default.
+  - **Confirm:** on by default, so you see and approve every request before it's sent.
+  - **Turn off and forget the key** removes the key.
+  - Nothing goes to Claude unless you press a button that says so.
 - **Windows** come back where you left them next time. On an iPhone, one window shows at a time with tabs to switch.
 
 The old platform check page is at `/check.html` (**LucianOS ▸ Platform check page**).
@@ -135,6 +150,8 @@ Trashed items go to `~/.lucianos/trash/`. Each one sits next to a `.origin` file
 - Allowing `node` or `swipl` means a logged-in user can run any code. That is intended for your own suite, but keep the password strong in remote mode. Five wrong passwords lock logins for 15 minutes.
 - Never add `bash` or `sh` to `allowedCommands` unless you mean to allow any shell command. shellrun will produce scripts that run through this allowlist.
 
+Live updates (folder changes, job output, events) share one connection per desktop (`/api/mux`). Browsers allow only six connections to a site over plain HTTP, so without this, a few open windows would stall the desktop.
+
 ## API in one glance
 
 The browser library is `public/shared/api.js`. Every app imports it:
@@ -152,7 +169,7 @@ api.jobs.stream(job.id, { output: ({ text }) => console.log(text), end: (s) => c
 npm test
 ```
 
-There are 56 tests. They cover the workflow checklist (daily items, child uses, reminder times, the Grammar Logic goal), MIDI reading and key finding, file copies, the character's command grammar (spoken maths, fuzzy names), the calculator, durations and time zones, plus sandbox escapes, symlinks, save conflicts, trash, search, the command allowlist, shell-injection attempts, interrupt, input, temporary folders, the job queue, output streaming, the Prolog command line, state, events, the local-mode guards, password login and its rate limit.
+There are 74 tests. They cover the Claude bridge (with a stand-in API: confirmation, monthly limit, temporary keys, the key never sent to the browser), predicted commands, finding programs in READMEs and making test files, many live streams sharing one connection, the workflow checklist (daily items, child uses, reminder times, the Grammar Logic goal), MIDI reading and key finding, file copies, the character's command grammar (spoken maths, fuzzy names), the calculator, durations and time zones, plus sandbox escapes, symlinks, save conflicts, trash, search, the command allowlist, shell-injection attempts, interrupt, input, temporary folders, the job queue, output streaming, the Prolog command line, state, events, the local-mode guards, password login and its rate limit.
 
 ## Adding the apps
 

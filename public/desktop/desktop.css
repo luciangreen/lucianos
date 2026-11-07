@@ -140,3 +140,14 @@ body.dragging-window iframe { pointer-events: none; }
 .win .statusline.row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; padding: 6px 8px; }
 .win .statusline.row input { flex: 1 1 160px; min-height: 32px; }
 .win .statusline.row button { min-height: 32px; }
+
+/* programs strip in folder windows */
+.programs { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 6px; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--accent) 5%, var(--panel)); }
+.programs button { min-height: 30px; padding: 0 8px; font-size: 13px; }
+.programs .prog { font-family: var(--mono); font-size: 12px; max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.programs .badge { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; font-weight: 600; }
+.progwin { display: flex; flex-direction: column; gap: 8px; padding: 8px; height: 100%; }
+.progform { display: grid; gap: 6px; }
+.progform label { display: grid; grid-template-columns: 70px 1fr; align-items: center; gap: 6px; font-size: 13px; color: var(--quiet); }
+.progform input { min-height: 32px; color: var(--ink); }
+.progout { flex: 1; min-height: 120px; max-height: none; }

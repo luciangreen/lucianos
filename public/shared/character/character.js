@@ -12,6 +12,7 @@ import './tts.js';
 import { evaluate } from '/desktop/calc.js';
 import { HELP_TEXT, parseCommand } from './commands.js';
 import { Puppet, placeholderFace, shrinkPhoto } from './puppet.js';
+import { predict, remember } from './predict.js';
 
 const css = document.createElement('link');
 css.rel = 'stylesheet';
@@ -29,7 +30,7 @@ const el = (tag, props = {}, ...kids) => {
   return n;
 };
 
-export async function mountCharacter({ handle = async () => null, help = HELP_TEXT, greeting = null, parent = document.body, bottom = 16 } = {}) {
+export async function mountCharacter({ handle = async () => null, help = HELP_TEXT, greeting = null, parent = document.body, bottom = 16, here = () => '' } = {}) {
   const Voice = window.NewosVoice;
   const Listen = window.NewosListen;
   let cfg = { name: 'Lucian', image: null, landmarks: null, voice: '', rate: 1, minimised: undefined, pos: null, ...((await api.state.get('character').catch(() => null)) ?? {}) };
@@ -56,7 +57,8 @@ export async function mountCharacter({ handle = async () => null, help = HELP_TE
     el('label', {}, 'Voice ', voiceSel),
     el('label', {}, 'Speed ', rateIn),
     el('p', { className: 'lc-note', textContent: 'Your photo stays in the suite (state folder). It is never sent anywhere else.' }));
-  const body = el('div', { className: 'lc-body' }, canvas, heard, said, form, settings, file);
+  const chips = el('div', { className: 'lc-chips', 'aria-label': 'Suggested commands' });
+  const body = el('div', { className: 'lc-body' }, canvas, heard, said, chips, form, settings, file);
   const root = el('aside', { className: 'lc-char', 'aria-label': `${cfg.name}, your assistant` }, head, body);
   parent.append(root);
 
@@ -77,6 +79,24 @@ export async function mountCharacter({ handle = async () => null, help = HELP_TE
       save();
     }
   }
+
+  // ---------- predicted commands (tap one to put it in the box, change it if you like, then Enter) ----------
+  let history = (await api.state.get('character-history').catch(() => null))?.items ?? [];
+  function renderChips() {
+    const items = predict(history, { here: here() });
+    chips.replaceChildren(...items.map((p) => el('button', {
+      type: 'button',
+      className: 'lc-chip',
+      textContent: p.text,
+      title: `${p.why}. Tap to edit, then press Enter`,
+      onclick: () => {
+        input.value = p.text;
+        input.focus();
+        input.setSelectionRange(p.text.length, p.text.length);
+      }
+    })));
+  }
+  renderChips();
 
   // ---------- speaking ----------
   let quiet = false;
@@ -109,6 +129,10 @@ export async function mountCharacter({ handle = async () => null, help = HELP_TE
     }
     if (reply === null || reply === undefined) {
       reply = cmd.intent === 'unknown' ? `I didn't catch a command in "${text}". Say help to hear what I can do.` : "I can't do that here yet.";
+    } else {
+      history = remember(history, { text, intent: cmd.intent, here: here() });
+      api.state.set('character-history', { items: history }).catch(() => {});
+      renderChips();
     }
     if (reply) await say(reply);
   }
