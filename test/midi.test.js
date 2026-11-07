@@ -43,3 +43,21 @@ test('drums on channel 10 are counted apart', () => {
   assert.equal(s.drums, 1);
   assert.equal(s.notes, 2);
 });
+
+test('instruments: each note gets its channel’s General MIDI program, changes included', () => {
+  const notes = [
+    { time: 0, duration: 0.5, pitch: 60, channel: 0 },
+    { time: 0, duration: 0.5, pitch: 40, channel: 1 },
+    { time: 1, duration: 0.5, pitch: 62, channel: 0 },
+    { time: 1, duration: 0.5, pitch: 36, channel: 9 }
+  ];
+  const song = parseMidi(encodeMidi(notes, { programs: { 0: 40, 1: 33 }, changes: [{ time: 0.75, channel: 0, program: 73 }] }));
+  const by = (pitch) => song.notes.find((n) => n.pitch === pitch);
+  assert.equal(by(60).program, 40); // violin
+  assert.equal(by(40).program, 33); // fingered bass
+  assert.equal(by(62).program, 73); // changed to flute
+  assert.equal(by(36).channel, 9); // drums
+  assert.deepEqual(song.programs, [33, 40, 73]);
+  assert.equal(by(60).volume.toFixed(2), (100 / 127).toFixed(2));
+  assert.equal(by(60).pan, (64 - 64) / 63.5);
+});

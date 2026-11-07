@@ -84,6 +84,15 @@ LucianOS is a web desktop that runs on your Mac. You can reach it from the Mac, 
   - At your reminder times (10:00 and 15:00 unless you change them), it asks again, until Grammar Logic is done: **Start now**, **In an hour** or **Not today**.
 - **Tools ▸ Today's music:**
   - Songs Music-Composer made in the last day (or 7 days, or all), played in the browser.
+  - **Instruments:** every one of the 128 General MIDI instruments has its own voice (`public/shared/gm.js`), so a song sounds like the instruments Music-Composer chose. Each song lists its instruments by name.
+    - Pianos and mallets are struck and fade away.
+    - Guitars, basses, harp, koto and sitar are plucked strings.
+    - Organs sustain with a rotating-speaker shimmer.
+    - Strings and brass swell, with vibrato.
+    - Flutes and reeds breathe.
+    - Choirs sing vowels.
+    - Each of the 47 drum-kit sounds is its own: kick, snares, hats (closing the hi-hat cuts an open one), toms, cymbals, congas, cowbell and so on.
+    - Every instrument has been rendered and levelled so they're about equally loud, the pitched ones checked to be in tune, and a little room reverb added.
   - ☆ shortlists a favourite. **Copy shortlist** copies them to `Music/GarageBand shortlist`.
   - **Open in GarageBand** opens them on the Mac. It needs `"open"` added to `allowedCommands`.
   - 💬 asks the character what it thinks of a song (needs simplug).
@@ -187,7 +196,7 @@ api.jobs.stream(job.id, { output: ({ text }) => console.log(text), end: (s) => c
 npm test
 ```
 
-There are 76 tests. They cover the Claude bridge (with a stand-in API: confirmation, monthly limit, temporary keys, the key never sent to the browser), predicted commands, recently changed files, GitHub statistics (with a stand-in GitHub), finding programs in READMEs and making test files, many live streams sharing one connection, the workflow checklist (daily items, child uses, reminder times, the Grammar Logic goal), MIDI reading and key finding, file copies, the character's command grammar (spoken maths, fuzzy names), the calculator, durations and time zones, plus sandbox escapes, symlinks, save conflicts, trash, search, the command allowlist, shell-injection attempts, interrupt, input, temporary folders, the job queue, output streaming, the Prolog command line, state, events, the local-mode guards, password login and its rate limit.
+There are 82 tests. They cover the Claude bridge (with a stand-in API: confirmation, monthly limit, temporary keys, the key never sent to the browser), predicted commands, recently changed files, GitHub statistics (with a stand-in GitHub), finding programs in READMEs and making test files, many live streams sharing one connection, the workflow checklist (daily items, child uses, reminder times, the Grammar Logic goal), MIDI reading and key finding, file copies, the character's command grammar (spoken maths, fuzzy names), the calculator, durations and time zones, plus sandbox escapes, symlinks, save conflicts, trash, search, the command allowlist, shell-injection attempts, interrupt, input, temporary folders, the job queue, output streaming, the Prolog command line, state, events, the local-mode guards, password login and its rate limit.
 
 ## Adding the apps
 

@@ -2,6 +2,7 @@
 // reminders and today's music. desktop.js passes in what it needs (ctx).
 import { api } from '/shared/api.js';
 import { midiStats, parseMidi, playMidi } from '/shared/midi.js';
+import { GM_NAMES } from '/shared/gm.js';
 import { bestMatch } from '/shared/character/commands.js';
 import { el } from './dom.js';
 import {
@@ -486,7 +487,8 @@ export function initWorkflows(ctx) {
         player?.stop();
         const song = await readSong(e.path);
         const s = midiStats(song);
-        info.textContent = `${Math.round(song.duration)} s · ${s.key ?? ''} · ${song.tempo} bpm`;
+        const instruments = [...(song.programs ?? []).map((n) => GM_NAMES[n]), ...(s.drums ? ['drums'] : [])];
+        info.textContent = `${Math.round(song.duration)} s · ${s.key ?? ''} · ${song.tempo} bpm${instruments.length ? ` · ${instruments.join(', ')}` : ''}`;
         const p = playMidi(song, { onProgress: (f) => (bar.firstChild.style.width = `${f * 100}%`) });
         player = { ...p, path: e.path };
         play.textContent = '■';

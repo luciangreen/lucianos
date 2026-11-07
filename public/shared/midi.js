@@ -1,6 +1,6 @@
 // MIDI for the LucianOS suite: read .mid files, describe them, and play them with Web Audio
 // (browsers cannot play MIDI by themselves).
-//   const song = parseMidi(bytes);   // { notes: [{ time, duration, pitch, velocity, channel }], duration, tempo, ... }
+//   const song = parseMidi(bytes);   // { notes: [{ time, duration, pitch, velocity, channel, program, volume, pan }], duration, tempo, ... }
 //   midiStats(song)                  // numbers simplug turns into words
 //   const p = playMidi(song); p.stop(); await p.done;
 
@@ -60,13 +60,21 @@ export function parseMidi(input) {
           const pitch = u8();
           const vel = u8();
           events.push({ tick, type: kind === 0x9 && vel > 0 ? 'on' : 'off', pitch, vel, ch });
-        } else if (kind === 0xc || kind === 0xd) pos += 1;
+        } else if (kind === 0xc) {
+          events.push({ tick, type: 'program', ch, program: u8() & 0x7f });
+        } else if (kind === 0xb) {
+          const cc = u8();
+          const value = u8();
+          if (cc === 7 || cc === 10 || cc === 11) events.push({ tick, type: 'cc', ch, cc, value });
+        } else if (kind === 0xd) pos += 1;
         else pos += 2;
       }
     }
     pos = end;
   }
-  events.sort((a, c) => a.tick - c.tick || (a.type === 'tempo' ? -1 : 0) - (c.type === 'tempo' ? -1 : 0));
+  // at the same tick, settings (tempo, instrument, volume) come before the notes they apply to
+  const first = (e) => (e.type === 'on' || e.type === 'off' ? 1 : 0);
+  events.sort((a, c) => a.tick - c.tick || first(a) - first(c));
 
   // ticks -> seconds through the tempo map
   let usPerBeat = 500000;
@@ -75,16 +83,32 @@ export function parseMidi(input) {
   let firstTempo = null;
   const open = new Map();
   const notes = [];
+  // per channel: instrument (General MIDI program), volume (CC7 × CC11) and pan (CC10)
+  const program = Array(16).fill(0);
+  const volume = Array(16).fill(100);
+  const expression = Array(16).fill(127);
+  const pan = Array(16).fill(64);
+  const programs = new Set();
   for (const e of events) {
     seconds += ((e.tick - lastTick) * usPerBeat) / tpb / 1e6;
     lastTick = e.tick;
     if (e.type === 'tempo') {
       usPerBeat = e.usPerBeat;
       firstTempo ??= e.usPerBeat;
+    } else if (e.type === 'program') {
+      program[e.ch] = e.program;
+    } else if (e.type === 'cc') {
+      if (e.cc === 7) volume[e.ch] = e.value;
+      else if (e.cc === 11) expression[e.ch] = e.value;
+      else pan[e.ch] = e.value;
     } else if (e.type === 'on') {
       const key = `${e.ch}:${e.pitch}`;
       if (!open.has(key)) open.set(key, []);
-      open.get(key).push({ time: seconds, velocity: e.vel, pitch: e.pitch, channel: e.ch });
+      if (e.ch !== 9) programs.add(program[e.ch]);
+      open.get(key).push({
+        time: seconds, velocity: e.vel, pitch: e.pitch, channel: e.ch,
+        program: program[e.ch], volume: (volume[e.ch] / 127) * (expression[e.ch] / 127), pan: (pan[e.ch] - 64) / 63.5
+      });
     } else {
       const stack = open.get(`${e.ch}:${e.pitch}`);
       const n = stack?.shift();
@@ -94,7 +118,7 @@ export function parseMidi(input) {
   for (const stack of open.values()) for (const n of stack) notes.push({ ...n, duration: Math.max(0.05, seconds - n.time) });
   notes.sort((a, c) => a.time - c.time);
   const duration = notes.reduce((m, n) => Math.max(m, n.time + n.duration), 0);
-  return { format, tracks: ntracks, ticksPerBeat: tpb, tempo: Math.round(60e6 / (firstTempo ?? 500000)), notes, duration };
+  return { format, tracks: ntracks, ticksPerBeat: tpb, tempo: Math.round(60e6 / (firstTempo ?? 500000)), notes, duration, programs: [...programs].sort((a, c) => a - c) };
 }
 
 // Krumhansl-Kessler key profiles
@@ -173,13 +197,17 @@ export function midiStats(song) {
 }
 
 // Build a simple one-track MIDI file (used by tests and examples).
-export function encodeMidi(notes, { tempo = 120, tpb = 480 } = {}) {
+// programs: { channel: General MIDI program }, set at the start; changes: [{ time, channel, program }]
+export function encodeMidi(notes, { tempo = 120, tpb = 480, programs = {}, changes = [] } = {}) {
   const ev = [];
+  for (const [ch, prog] of Object.entries(programs)) ev.push({ t: 0, d: [0xc0 | Number(ch), prog] });
+  for (const c of changes) ev.push({ t: Math.round(c.time * (tempo / 60) * tpb), d: [0xc0 | c.channel, c.program] });
   for (const n of notes) {
     ev.push({ t: Math.round(n.time * (tempo / 60) * tpb), d: [0x90 | (n.channel ?? 0), n.pitch, n.velocity ?? 90] });
     ev.push({ t: Math.round((n.time + n.duration) * (tempo / 60) * tpb), d: [0x80 | (n.channel ?? 0), n.pitch, 0] });
   }
-  ev.sort((a, b) => a.t - b.t || (a.d[0] & 0xf0) - (b.d[0] & 0xf0));
+  const order = (d) => ((d[0] & 0xf0) === 0xc0 ? 0 : d[0] & 0xf0);
+  ev.sort((a, b) => a.t - b.t || order(a.d) - order(b.d));
   const vlq = (v) => {
     const out = [v & 0x7f];
     while ((v >>= 7)) out.unshift((v & 0x7f) | 0x80);
@@ -197,55 +225,59 @@ export function encodeMidi(notes, { tempo = 120, tpb = 480 } = {}) {
   return new Uint8Array([0x4d, 0x54, 0x68, 0x64, ...u32(6), 0, 0, 0, 1, (tpb >> 8) & 255, tpb & 255, 0x4d, 0x54, 0x72, 0x6b, ...u32(track.length), ...track]);
 }
 
-// Play with simple synth voices. Returns { stop(), done: Promise }.
+// Play with General MIDI voices (gm.js): every instrument has its own sound, and drums
+// (channel 10) their own kit. Notes are scheduled a little ahead as the song plays.
+// Returns { stop(), done: Promise }.
 export function playMidi(song, { onProgress } = {}) {
   const Ctx = window.AudioContext || window.webkitAudioContext;
   const ctx = new Ctx();
-  const master = ctx.createGain();
-  master.gain.value = 0.18;
-  master.connect(ctx.destination);
-  const t0 = ctx.currentTime + 0.1;
-  const notes = song.notes.slice(0, 6000);
-  for (const n of notes) {
-    const start = t0 + n.time;
-    const end = start + Math.min(n.duration, 4);
-    const g = ctx.createGain();
-    const v = (n.velocity / 127) * 0.9;
-    g.gain.setValueAtTime(0, start);
-    g.gain.linearRampToValueAtTime(v, start + 0.01);
-    g.gain.setTargetAtTime(v * 0.6, start + 0.05, 0.2);
-    g.gain.setTargetAtTime(0, end, 0.05);
-    g.connect(master);
-    if (n.channel === 9) {
-      // drums: a short noise burst
-      const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.12), ctx.sampleRate);
-      const d = buf.getChannelData(0);
-      for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
-      const src = ctx.createBufferSource();
-      src.buffer = buf;
-      src.connect(g);
-      src.start(start);
-    } else {
-      const o = ctx.createOscillator();
-      o.type = n.pitch < 48 ? 'sawtooth' : 'triangle';
-      o.frequency.value = 440 * 2 ** ((n.pitch - 69) / 12);
-      o.connect(g);
-      o.start(start);
-      o.stop(end + 0.3);
-    }
-  }
+  const out = mixer(ctx);
+  out.master.connect(ctx.destination);
+  const t0 = ctx.currentTime + 0.15;
+  const notes = song.notes;
+  let next = 0;
   let timer = null;
   let finish;
+  let voices = null;
   const done = new Promise((r) => (finish = r));
   const stop = () => {
     clearInterval(timer);
     ctx.close().catch(() => {});
     finish();
   };
-  timer = setInterval(() => {
-    const t = ctx.currentTime - t0;
-    onProgress?.(Math.max(0, Math.min(1, t / Math.max(0.1, song.duration))));
-    if (t > song.duration + 0.5) stop();
-  }, 200);
+  const tick = async () => {
+    voices ??= await import('./gm.js');
+    const now = ctx.currentTime - t0;
+    while (next < notes.length && notes[next].time < now + 0.6) {
+      const n = notes[next++];
+      if (n.time < now - 0.05) continue; // fell behind: skip rather than play late
+      (n.channel === 9 ? voices.playDrum : voices.playNote)(ctx, out, n, t0 + n.time);
+    }
+    onProgress?.(Math.max(0, Math.min(1, now / Math.max(0.1, song.duration))));
+    if (now > song.duration + 1.5) stop();
+  };
+  timer = setInterval(tick, 100);
+  tick();
   return { stop, done };
+}
+
+// The mix: dry voices and a reverb send, through a gentle limiter.
+export function mixer(ctx, makeReverb) {
+  const master = ctx.createDynamicsCompressor();
+  master.threshold.value = -10;
+  master.knee.value = 8;
+  master.ratio.value = 4;
+  master.attack.value = 0.003;
+  master.release.value = 0.2;
+  const dry = ctx.createGain();
+  dry.gain.value = 0.9;
+  dry.connect(master);
+  const rev = ctx.createGain();
+  const out = { dry, rev, master };
+  import('./gm.js').then(({ makeReverb: mk }) => {
+    const r = (makeReverb ?? mk)(ctx);
+    rev.connect(r.input);
+    r.output.connect(master);
+  });
+  return out;
 }
