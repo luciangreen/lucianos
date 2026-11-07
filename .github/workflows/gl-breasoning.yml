@@ -29,8 +29,11 @@ jobs:
           sudo apt-get install --yes swi-prolog
           swipl --version
       - name: Check out the Prolog repos side by side
+        # As on a Mac, Dropbox is a link to the real folder in Library/CloudStorage,
+        # so paths that climb out of it with ".." would break.
         run: |
-          mkdir -p "$RUNNER_TEMP/root/Dropbox/GitHub-private2"
+          mkdir -p "$RUNNER_TEMP/root/Library/CloudStorage/Dropbox/GitHub-private2"
+          ln -s "$RUNNER_TEMP/root/Library/CloudStorage/Dropbox" "$RUNNER_TEMP/root/Dropbox"
           cd "$RUNNER_TEMP/root/Dropbox/GitHub-private2"
           for r in Algorithm-Writer-with-Lists Text-to-Breasonings listprologinterpreter Philosophy Languages List-Prolog-to-Prolog-Converter Prolog-to-List-Prolog SSI culturaltranslationtool; do
             git clone --depth 1 "https://github.com/luciangreen/$r"

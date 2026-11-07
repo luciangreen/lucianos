@@ -5,7 +5,7 @@ import { midiStats, parseMidi, playMidi } from '/shared/midi.js';
 import { bestMatch } from '/shared/character/commands.js';
 import { el } from './dom.js';
 import {
-  DEFAULT_SETTINGS, KINDS, STATUSES, dailyToRun, dueReminder, glGoal, breasonGoal, loaderText, relPath, LOADER, isFinished, isRecent, needsPerson,
+  DEFAULT_SETTINGS, KINDS, STATUSES, dailyToRun, dueReminder, glGoal, breasonGoal, isFinished, isRecent, needsPerson,
   newItem, ordered, parseTimes, slug, stamp, timeKey, today
 } from './workflows-lib.js';
 
@@ -143,7 +143,8 @@ export function initWorkflows(ctx) {
     say(`Running Grammar Logic on ${topic}.`);
     let job;
     try {
-      job = await api.jobs.prolog({ goal: glGoal(topic), consult: [await writeLoader(s.awl)], cwd: s.awl, label: `Grammar Logic: ${topic}` });
+      await checkFolders();
+      job = await api.jobs.prolog({ goal: glGoal(topic, s), cwd: s.awl, label: `Grammar Logic: ${topic}` });
     } catch (err) {
       return showError(`Grammar Logic couldn't start: ${err.message}`);
     }
@@ -176,16 +177,13 @@ export function initWorkflows(ctx) {
     ]);
   }
 
-  // The loader file that includes Text-to-Breasonings and Grammar Logic as find_char_map.pl does.
-  // Returns its path from `cwd`, for consulting.
-  async function writeLoader(cwd) {
+  // Checks the two folders hold the files find_char_map.pl loads, before starting Prolog.
+  async function checkFolders() {
     const s = st.settings;
     for (const [dir, file, what] of [[s.t2b, 'text_to_breasonings.pl', 'Text-to-Breasonings'], [s.awl, 'grammar_logic_to_alg1.pl', 'Algorithm-Writer-with-Lists']]) {
       const ok = await api.files.read(`${dir}/${file}`).then(() => true, () => false);
       if (!ok) throw new Error(`can't find ${file} in ${dir}. Set the ${what} folder in Workflow settings.`);
     }
-    await api.files.write(LOADER, loaderText(s), { mkdirs: true });
-    return relPath(cwd, LOADER);
   }
 
   // Breasons a Grammar Logic file in Text-to-Breasonings:
@@ -194,7 +192,8 @@ export function initWorkflows(ctx) {
     const t2b = st.settings.t2b;
     let job;
     try {
-      job = await api.jobs.prolog({ goal: breasonGoal(relPath(t2b, path)), consult: [await writeLoader(t2b)], cwd: t2b, label: `Breasoning: ${path.split('/').pop()}` });
+      await checkFolders();
+      job = await api.jobs.prolog({ goal: breasonGoal(path, st.settings), cwd: t2b, label: `Breasoning: ${path.split('/').pop()}` });
     } catch (err) {
       return showError(`Breasoning couldn't start: ${err.message}`);
     }

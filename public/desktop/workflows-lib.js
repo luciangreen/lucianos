@@ -126,8 +126,26 @@ export function glEssay(topic) {
   return `${text}\n`.repeat(Math.ceil(200 / words));
 }
 
-export function glGoal(topic) {
+// Loads the two files as one program, as cgpt_combophil_analogy.pl does, using absolute paths
+// from the suite folder (LUCIANOS_ROOT, set for every job). Relative paths break when a folder,
+// such as Dropbox on a Mac, is a link: ".." then climbs the real folder, not the link.
+// Prolog writes the loader itself (LucianOS/prolog/gl_and_breasoning.pl), so you can see it.
+export const LOADER = 'LucianOS/prolog/gl_and_breasoning.pl';
+export function loadGoal({ awl, t2b }) {
   return [
+    "getenv('LUCIANOS_ROOT',Root)",
+    `atomic_list_concat([Root,'/',${prologText(t2b)},'/text_to_breasonings.pl'],T2B_file)`,
+    `atomic_list_concat([Root,'/',${prologText(awl)},'/grammar_logic_to_alg1.pl'],GL_file)`,
+    `atomic_list_concat([Root,'/',${prologText(LOADER)}],Loader)`,
+    'file_directory_name(Loader,Loader_dir), make_directory_path(Loader_dir)',
+    "open(Loader,write,Loader_s), format(Loader_s,'% Written by LucianOS: loads Grammar Logic and Text-to-Breasonings as find_char_map.pl does.~n:-include(~q).~n:-include(~q).~n',[T2B_file,GL_file]), close(Loader_s)",
+    'consult(Loader)'
+  ].join(', ');
+}
+
+export function glGoal(topic, folders) {
+  return [
+    loadGoal(folders),
     `Essay_03 = ${prologText(glEssay(topic))}`,
     'truncate1(string,Essay_03,200,Essay_0)',
     'As is 4*50',
@@ -138,39 +156,18 @@ export function glGoal(topic) {
   ].join(', ');
 }
 
-// Breasons a Grammar Logic file (read as GL_out), run in Text-to-Breasonings.
-export function breasonGoal(fileFromT2b) {
+// Breasons a Grammar Logic file (`file`, from the suite folder), run in Text-to-Breasonings.
+export function breasonGoal(file, folders) {
   return [
-    `read_file_to_string(${prologText(fileFromT2b)},GL_text,[])`,
+    loadGoal(folders),
+    `atomic_list_concat([Root,'/',${prologText(file)}],GL_path)`,
+    'read_file_to_string(GL_path,GL_text,[])',
     'split_string(GL_text,"","\\s\\t\\n\\r",[GL_out])',
     'As is 4*50',
     'Br is As*80',
     'texttobr2(u,u,GL_out,Br,[auto,on])',
     'texttobr(u,u,GL_out,u)'
   ].join(', ');
-}
-
-// A path from folder `from` to `to` (both inside the suite).
-export function relPath(from, to) {
-  const a = from.split('/').filter(Boolean);
-  const b = to.split('/').filter(Boolean);
-  let i = 0;
-  while (i < a.length && i < b.length && a[i] === b[i]) i++;
-  return [...Array(a.length - i).fill('..'), ...b.slice(i)].join('/') || '.';
-}
-
-// The loader LucianOS writes: one program that includes both files, as cgpt_combophil_analogy.pl does,
-// so shared files (truncate.pl, listprolog) are loaded once.
-export const LOADER = 'LucianOS/prolog/gl_and_breasoning.pl';
-export function loaderText({ awl, t2b }, loader = LOADER) {
-  const dir = loader.split('/').slice(0, -1).join('/');
-  return [
-    '% Written by LucianOS. Loads Grammar Logic and Text-to-Breasonings the way find_char_map.pl does',
-    '% (through cgpt_combophil_analogy.pl). Change the folders in Workflow settings, not here.',
-    `:-include('${relPath(dir, `${t2b}/text_to_breasonings.pl`)}').`,
-    `:-include('${relPath(dir, `${awl}/grammar_logic_to_alg1.pl`)}').`,
-    ''
-  ].join('\n');
 }
 
 export const slug = (s) => String(s).trim().replace(/[^\w -]+/g, '').replace(/\s+/g, ' ').slice(0, 60).trim() || 'untitled';

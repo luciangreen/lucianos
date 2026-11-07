@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { BR, GL_AS, LOADER, breasonGoal, dailyToRun, dueReminder, glEssay, glGoal, loaderText, relPath, isFinished, isRecent, needsPerson, newItem, ordered, parseTimes, prologString, slug, stamp, today } from '../public/desktop/workflows-lib.js';
+import { BR, GL_AS, LOADER, breasonGoal, dailyToRun, dueReminder, glEssay, glGoal, loadGoal, isFinished, isRecent, needsPerson, newItem, ordered, parseTimes, prologString, slug, stamp, today } from '../public/desktop/workflows-lib.js';
 
 test('daily items finish for the day only', () => {
   const d = newItem({ title: 'GL', daily: true, finishedOn: '2026-11-07' });
@@ -40,17 +40,21 @@ test('Grammar Logic and breasoning use the calls in find_char_map.pl', () => {
   // Essay_03: the topic on its own line, ceiling(200/Words) times
   assert.equal(glEssay('time travel'), 'time travel\n'.repeat(100));
   assert.equal(glEssay('meditation'), 'meditation\n'.repeat(200));
-  const g = glGoal('say "hi"');
-  assert.match(g, /^Essay_03 = "say \\"hi\\"\\nsay/);
+  const folders = { awl: 'Dropbox/GitHub-private2/Algorithm-Writer-with-Lists', t2b: 'Dropbox/GitHub-private2/Text-to-Breasonings' };
+  // paths are absolute, from the suite folder, so a linked Dropbox folder can't break them
+  const load = loadGoal(folders);
+  assert.match(load, /^getenv\('LUCIANOS_ROOT',Root\), /);
+  assert.match(load, /atomic_list_concat\(\[Root,'\/',"Dropbox\/GitHub-private2\/Text-to-Breasonings",'\/text_to_breasonings\.pl'\],T2B_file\)/);
+  assert.match(load, /atomic_list_concat\(\[Root,'\/',"Dropbox\/GitHub-private2\/Algorithm-Writer-with-Lists",'\/grammar_logic_to_alg1\.pl'\],GL_file\)/);
+  assert.match(load, /:-include\(~q\)\.~n:-include\(~q\)\.~n',\[T2B_file,GL_file\]\), close\(Loader_s\), consult\(Loader\)$/);
+  assert.ok(!load.includes('..'));
+  const g = glGoal('say "hi"', folders);
+  assert.ok(g.startsWith(load + ', Essay_03 = "say \\"hi\\"\\nsay'));
   assert.match(g, /, truncate1\(string,Essay_03,200,Essay_0\), As is 4\*50, grammar_logic_to_alg1\(Essay_0,As,GL_out1\), term_to_atom\(GL_out1,GL_out2\), string_atom\(GL_out,GL_out2\), write\(GL_out\), nl$/);
-  const b = breasonGoal('../../../LucianOS/gl/meditation 2026-11-07 1500.txt');
-  assert.match(b, /^read_file_to_string\("\.\.\/\.\.\/\.\.\/LucianOS\/gl\/meditation 2026-11-07 1500\.txt",GL_text,\[\]\), /);
+  const b = breasonGoal('LucianOS/gl/meditation 2026-11-07 1500.txt', folders);
+  assert.ok(b.startsWith(load + `, atomic_list_concat([Root,'/',"LucianOS/gl/meditation 2026-11-07 1500.txt"],GL_path), read_file_to_string(GL_path,GL_text,[]), `));
   assert.match(b, /As is 4\*50, Br is As\*80, texttobr2\(u,u,GL_out,Br,\[auto,on\]\), texttobr\(u,u,GL_out,u\)$/);
-  assert.equal(relPath('Dropbox/GitHub-private2/Text-to-Breasonings', 'LucianOS/gl/a.txt'), '../../../LucianOS/gl/a.txt');
-  assert.equal(relPath('Dropbox/GitHub-private2/Algorithm-Writer-with-Lists', LOADER), '../../../LucianOS/prolog/gl_and_breasoning.pl');
-  assert.equal(relPath('a/b', 'a/b/c.pl'), 'c.pl');
-  const loader = loaderText({ awl: 'Dropbox/GitHub-private2/Algorithm-Writer-with-Lists', t2b: 'Dropbox/GitHub-private2/Text-to-Breasonings' });
-  assert.match(loader, /^:-include\('\.\.\/\.\.\/Dropbox\/GitHub-private2\/Text-to-Breasonings\/text_to_breasonings\.pl'\)\.\n:-include\('\.\.\/\.\.\/Dropbox\/GitHub-private2\/Algorithm-Writer-with-Lists\/grammar_logic_to_alg1\.pl'\)\.$/m);
+  assert.equal(LOADER, 'LucianOS/prolog/gl_and_breasoning.pl');
 });
 
 test('names, dates and scripts', () => {
