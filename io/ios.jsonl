@@ -1,0 +1,200 @@
+{"n":1,"name":"copyName","input":["b copy 2.txt",[],false],"output":"b copy.txt"}
+{"n":2,"name":"copyPlan","input":[[{"name":"run.pl","path":"src/run.pl","type":"file"},{"name":"notes.md","path":"src/notes.md","type":"file"},{"name":"report 2.pdf","path":"src/report 2.pdf","type":"file"}],"",["run.pl"]],"output":[{"from":"src/run.pl","to":"run copy.pl","name":"run copy.pl"},{"from":"src/notes.md","to":"notes.md","name":"notes.md"},{"from":"src/report 2.pdf","to":"report 2.pdf","name":"report 2.pdf"}]}
+{"n":3,"name":"marquee hits","input":[{"x":273,"y":196},{"x":83,"y":161},[{"key":"k0","rect":{"left":77,"top":147,"right":157,"bottom":237}},{"key":"k1","rect":{"left":33,"top":118,"right":113,"bottom":208}}],["k0","k0"],"replace"],"output":["k0","k1"]}
+{"n":4,"name":"edgeScroll","input":[209,0,500],"output":0}
+{"n":5,"name":"cleanUp","input":[[{"key":"i0","right":false},{"key":"i1","right":true},{"key":"i2","right":true},{"key":"i3","right":false},{"key":"i4","right":false},{"key":"i5","right":false},{"key":"i6","right":true},{"key":"i7","right":false}],{"width":800,"height":760}],"output":{"i0":{"x":12,"y":12},"i1":{"x":692,"y":12},"i2":{"x":692,"y":112},"i3":{"x":12,"y":112},"i4":{"x":12,"y":212},"i5":{"x":12,"y":312},"i6":{"x":692,"y":212},"i7":{"x":12,"y":412}}}
+{"n":6,"name":"placeAll","input":[[{"key":"i0","right":true},{"key":"i1","right":false},{"key":"i2","right":true},{"key":"i3","right":false},{"key":"i4","right":false},{"key":"i5","right":true},{"key":"i6","right":true},{"key":"i7","right":false}],{"i1":{"x":934,"y":362},"i2":{"x":393,"y":610},"i3":{"x":1239,"y":831},"i6":{"x":901,"y":827}},{"width":1280,"height":760}],"output":{"i1":{"x":934,"y":362},"i2":{"x":393,"y":610},"i0":{"x":1172,"y":12},"i3":{"x":12,"y":12},"i4":{"x":12,"y":112},"i5":{"x":1172,"y":112},"i6":{"x":1172,"y":212},"i7":{"x":12,"y":212}}}
+{"n":7,"name":"sortEntries","input":[[{"name":"a.txt","type":"file","mtimeMs":30},{"name":"image.png","type":"file","mtimeMs":89}],"kind"],"output":["image.png","a.txt"]}
+{"n":8,"name":"rowsFor","input":[1124],"output":11}
+{"n":9,"name":"readmePrograms","input":["# a buys\n\nThe dog a tree reads teacher runs sells with.\n\n```\n?- main.\n```\n\nRun `main.`."],"output":[{"kind":"prolog","goal":"main","consult":[],"label":"main"}]}
+{"n":10,"name":"isTestPath","input":["testing.md"],"output":false}
+{"n":11,"name":"testsFailed","input":[2,"# fail 2"],"output":true}
+{"n":12,"name":"daysBetween","input":["2026-02-09","2026-11-09"],"output":273}
+{"n":13,"name":"repeatText","input":[{"everyDays":0}],"output":""}
+{"n":14,"name":"isFinished","input":[{"status":"done","daily":true,"finishedOn":"2026-02-02","lastDone":"2026-04-19"},"2026-08-04"],"output":false}
+{"n":15,"name":"kindOf","input":["image.png","file"],"output":"image"}
+{"n":16,"name":"displayName","input":["notes.md"],"output":"notes.md"}
+{"n":17,"name":"parseUrlFile","input":["[InternetShortcut]\nURL=ftp://files"],"output":"ftp://files"}
+{"n":18,"name":"safeUrl","input":["http://a.b/c?d=1"],"output":"http://a.b/c?d=1"}
+{"n":19,"name":"copyName","input":["run.pl",["image.png","a.txt","a copy.txt","a.txt"],false],"output":"run copy.pl"}
+{"n":20,"name":"copyPlan","input":[[{"name":"b copy 2.txt","path":"src/b copy 2.txt","type":"file"}],"",[]],"output":[{"from":"src/b copy 2.txt","to":"b copy 2.txt","name":"b copy 2.txt"}]}
+{"n":21,"name":"marquee hits","input":[{"x":150,"y":348},{"x":477,"y":317},[{"key":"k0","rect":{"left":48,"top":44,"right":128,"bottom":134}},{"key":"k1","rect":{"left":204,"top":163,"right":284,"bottom":253}}],[],"toggle"],"output":[]}
+{"n":22,"name":"edgeScroll","input":[145,0,500],"output":0}
+{"n":23,"name":"cleanUp","input":[[{"key":"i0","right":false},{"key":"i1","right":false},{"key":"i2","right":false},{"key":"i3","right":true},{"key":"i4","right":false},{"key":"i5","right":false},{"key":"i6","right":true},{"key":"i7","right":true},{"key":"i8","right":false},{"key":"i9","right":false},{"key":"i10","right":true}],{"width":390,"height":300}],"output":{"i0":{"x":12,"y":12},"i1":{"x":12,"y":112},"i2":{"x":108,"y":12},"i3":{"x":282,"y":12},"i4":{"x":108,"y":112},"i5":{"x":204,"y":12},"i6":{"x":282,"y":112},"i7":{"x":186,"y":12},"i8":{"x":204,"y":112},"i9":{"x":300,"y":12},"i10":{"x":186,"y":112}}}
+{"n":24,"name":"placeAll","input":[[{"key":"i0","right":false}],{"i0":{"x":317,"y":133}},{"width":1280,"height":568}],"output":{"i0":{"x":317,"y":133}}}
+{"n":25,"name":"sortEntries","input":[[{"name":"report 2.pdf","type":"file","mtimeMs":77},{"name":"Docs","type":"dir","mtimeMs":80},{"name":"b copy 2.txt","type":"file","mtimeMs":6},{"name":"notes.md","type":"file","mtimeMs":21},{"name":"a copy.txt","type":"file","mtimeMs":64},{"name":"report 2.pdf","type":"file","mtimeMs":65}],"name"],"output":["a copy.txt","b copy 2.txt","Docs","notes.md","report 2.pdf","report 2.pdf"]}
+{"n":26,"name":"rowsFor","input":[391],"output":3}
+{"n":27,"name":"readmePrograms","input":["# true\n\nGreen green list apple data about algorithm.\n\n```\n?- main.\n```\n\nRun `main.`."],"output":[{"kind":"prolog","goal":"main","consult":[],"label":"main"}]}
+{"n":28,"name":"isTestPath","input":["test/a.test.js"],"output":true}
+{"n":29,"name":"testsFailed","input":[2,"# pass 3\n# fail 0"],"output":true}
+{"n":30,"name":"daysBetween","input":["2026-09-08","2026-08-09"],"output":-30}
+{"n":31,"name":"repeatText","input":[{}],"output":""}
+{"n":32,"name":"isFinished","input":[{"status":"todo","daily":true,"finishedOn":"2026-09-02","lastDone":"2026-07-11"},"2026-10-08"],"output":false}
+{"n":33,"name":"kindOf","input":["a copy.txt","dir"],"output":"dir"}
+{"n":34,"name":"displayName","input":[".hidden"],"output":".hidden"}
+{"n":35,"name":"parseUrlFile","input":["[InternetShortcut]\nURL=https://example.com/a"],"output":"https://example.com/a"}
+{"n":36,"name":"safeUrl","input":[" https://x.y "],"output":"https://x.y/"}
+{"n":37,"name":"copyName","input":["a.txt",["report 2.pdf"],false],"output":"a copy.txt"}
+{"n":38,"name":"copyPlan","input":[[{"name":"b copy 2.txt","path":"src/b copy 2.txt","type":"file"},{"name":"a copy.txt","path":"src/a copy.txt","type":"file"}],"src",["report 2.pdf","report 2.pdf","a.txt"]],"output":[{"from":"src/b copy 2.txt","to":"src/b copy 2.txt","name":"b copy 2.txt"},{"from":"src/a copy.txt","to":"src/a copy.txt","name":"a copy.txt"}]}
+{"n":39,"name":"marquee hits","input":[{"x":98,"y":250},{"x":142,"y":62},[{"key":"k0","rect":{"left":306,"top":5,"right":386,"bottom":95}},{"key":"k1","rect":{"left":33,"top":9,"right":113,"bottom":99}},{"key":"k2","rect":{"left":201,"top":203,"right":281,"bottom":293}},{"key":"k3","rect":{"left":327,"top":240,"right":407,"bottom":330}}],["k2"],"toggle"],"output":["k1","k2"]}
+{"n":40,"name":"edgeScroll","input":[-18,0,500],"output":-18}
+{"n":41,"name":"cleanUp","input":[[{"key":"i0","right":false},{"key":"i1","right":true},{"key":"i2","right":false},{"key":"i3","right":false},{"key":"i4","right":false},{"key":"i5","right":false},{"key":"i6","right":true},{"key":"i7","right":true},{"key":"i8","right":false},{"key":"i9","right":false},{"key":"i10","right":true}],{"width":800,"height":568}],"output":{"i0":{"x":12,"y":12},"i1":{"x":692,"y":12},"i2":{"x":12,"y":112},"i3":{"x":12,"y":212},"i4":{"x":12,"y":312},"i5":{"x":12,"y":412},"i6":{"x":692,"y":112},"i7":{"x":692,"y":212},"i8":{"x":108,"y":12},"i9":{"x":108,"y":112},"i10":{"x":692,"y":312}}}
+{"n":42,"name":"placeAll","input":[[{"key":"i0","right":false},{"key":"i1","right":false},{"key":"i2","right":false},{"key":"i3","right":true},{"key":"i4","right":false},{"key":"i5","right":false}],{"i0":{"x":43,"y":722},"i3":{"x":1245,"y":303},"i4":{"x":1184,"y":765}},{"width":1280,"height":568}],"output":{"i0":{"x":12,"y":12},"i1":{"x":12,"y":112},"i2":{"x":12,"y":212},"i3":{"x":1172,"y":12},"i4":{"x":12,"y":312},"i5":{"x":12,"y":412}}}
+{"n":43,"name":"sortEntries","input":[[{"name":"Docs","type":"dir","mtimeMs":65},{"name":"a copy.txt","type":"file","mtimeMs":5},{"name":"a copy.txt","type":"file","mtimeMs":60},{"name":"run.pl","type":"file","mtimeMs":60}],"name"],"output":["a copy.txt","a copy.txt","Docs","run.pl"]}
+{"n":44,"name":"rowsFor","input":[184],"output":1}
+{"n":45,"name":"readmePrograms","input":["# logic apple\n\nQuickly dog number and apple number.\n\n```\nswipl run.pl\n```\n\nRun `go`."],"output":[{"kind":"terminal","command":"swipl run.pl","label":"swipl run.pl"}]}
+{"n":46,"name":"isTestPath","input":["lib/test-utils.js"],"output":false}
+{"n":47,"name":"testsFailed","input":[0,"false."],"output":false}
+{"n":48,"name":"daysBetween","input":["2026-11-17","2026-08-12"],"output":-97}
+{"n":49,"name":"repeatText","input":[{"everyDays":19}],"output":"every 19 days"}
+{"n":50,"name":"isFinished","input":[{"status":"doing","everyDays":7},"2026-03-05"],"output":false}
+{"n":51,"name":"kindOf","input":["deck.lpres","file"],"output":"other"}
+{"n":52,"name":"displayName","input":[".hidden"],"output":".hidden"}
+{"n":53,"name":"parseUrlFile","input":["javascript:alert(1)"],"output":null}
+{"n":54,"name":"safeUrl","input":["example.com"],"output":null}
+{"n":55,"name":"copyName","input":["Docs",[],false],"output":"Docs copy"}
+{"n":56,"name":"copyPlan","input":[[{"name":"image.png","path":"src/image.png","type":"file"},{"name":"a.txt","path":"src/a.txt","type":"file"}],"src",["image.png","a copy.txt","notes.md"]],"output":[{"from":"src/image.png","to":"src/image copy.png","name":"image copy.png"},{"from":"src/a.txt","to":"src/a.txt","name":"a.txt"}]}
+{"n":57,"name":"marquee hits","input":[{"x":448,"y":13},{"x":140,"y":21},[{"key":"k0","rect":{"left":469,"top":95,"right":549,"bottom":185}},{"key":"k1","rect":{"left":204,"top":202,"right":284,"bottom":292}}],[],"add"],"output":[]}
+{"n":58,"name":"edgeScroll","input":[415,0,500],"output":0}
+{"n":59,"name":"cleanUp","input":[[{"key":"i0","right":false},{"key":"i1","right":true},{"key":"i2","right":false},{"key":"i3","right":false},{"key":"i4","right":false},{"key":"i5","right":false},{"key":"i6","right":false},{"key":"i7","right":false}],{"width":390,"height":568}],"output":{"i0":{"x":12,"y":12},"i1":{"x":282,"y":12},"i2":{"x":12,"y":112},"i3":{"x":12,"y":212},"i4":{"x":12,"y":312},"i5":{"x":12,"y":412},"i6":{"x":108,"y":12},"i7":{"x":108,"y":112}}}
+{"n":60,"name":"placeAll","input":[[{"key":"i0","right":false},{"key":"i1","right":false},{"key":"i2","right":false},{"key":"i3","right":false},{"key":"i4","right":true}],{"i0":{"x":1035,"y":277},"i1":{"x":1052,"y":816},"i2":{"x":551,"y":168},"i4":{"x":721,"y":485}},{"width":390,"height":760}],"output":{"i0":{"x":12,"y":12},"i1":{"x":12,"y":112},"i2":{"x":12,"y":212},"i3":{"x":12,"y":312},"i4":{"x":282,"y":12}}}
+{"n":61,"name":"sortEntries","input":[[{"name":"report 2.pdf","type":"file","mtimeMs":56},{"name":"Docs","type":"dir","mtimeMs":4},{"name":"a.txt","type":"file","mtimeMs":56},{"name":"Docs","type":"dir","mtimeMs":35},{"name":"a copy.txt","type":"file","mtimeMs":57}],"name"],"output":["a copy.txt","a.txt","Docs","Docs","report 2.pdf"]}
+{"n":62,"name":"rowsFor","input":[166],"output":1}
+{"n":63,"name":"readmePrograms","input":["# runs\n\nNumber prolog writes tree a.\n\n```\nnpm test\n```\n\nRun `start(8080).`."],"output":[{"kind":"prolog","goal":"start(8080)","consult":[],"label":"start(8080)"}]}
+{"n":64,"name":"isTestPath","input":["tests/t.pl"],"output":true}
+{"n":65,"name":"testsFailed","input":[1,"# pass 3\n# fail 0"],"output":true}
+{"n":66,"name":"daysBetween","input":["2026-02-10","2026-08-28"],"output":199}
+{"n":67,"name":"repeatText","input":[{"everyDays":0}],"output":""}
+{"n":68,"name":"isFinished","input":[{"status":"done","daily":true,"finishedOn":"2026-01-17","lastDone":"2026-08-15"},"2026-01-09"],"output":false}
+{"n":69,"name":"kindOf","input":["a copy.txt","file"],"output":"text"}
+{"n":70,"name":"displayName","input":[".hidden"],"output":".hidden"}
+{"n":71,"name":"parseUrlFile","input":[""],"output":null}
+{"n":72,"name":"safeUrl","input":["data:text/html,x"],"output":null}
+{"n":73,"name":"copyName","input":["image.png",["a.txt","notes.md"],false],"output":"image copy.png"}
+{"n":74,"name":"copyPlan","input":[[{"name":"notes.md","path":"src/notes.md","type":"file"}],"",["Docs","image.png","image.png"]],"output":[{"from":"src/notes.md","to":"notes.md","name":"notes.md"}]}
+{"n":75,"name":"marquee hits","input":[{"x":375,"y":72},{"x":35,"y":71},[{"key":"k0","rect":{"left":242,"top":153,"right":322,"bottom":243}},{"key":"k1","rect":{"left":227,"top":99,"right":307,"bottom":189}},{"key":"k2","rect":{"left":314,"top":233,"right":394,"bottom":323}},{"key":"k3","rect":{"left":409,"top":25,"right":489,"bottom":115}}],["k1","k1"],"toggle"],"output":["k1"]}
+{"n":76,"name":"edgeScroll","input":[256,0,500],"output":0}
+{"n":77,"name":"cleanUp","input":[[{"key":"i0","right":false},{"key":"i1","right":false},{"key":"i2","right":false},{"key":"i3","right":false},{"key":"i4","right":true}],{"width":1280,"height":568}],"output":{"i0":{"x":12,"y":12},"i1":{"x":12,"y":112},"i2":{"x":12,"y":212},"i3":{"x":12,"y":312},"i4":{"x":1172,"y":12}}}
+{"n":78,"name":"placeAll","input":[[{"key":"i0","right":true},{"key":"i1","right":true},{"key":"i2","right":false},{"key":"i3","right":false},{"key":"i4","right":false},{"key":"i5","right":false}],{"i0":{"x":1269,"y":263},"i1":{"x":127,"y":350},"i5":{"x":864,"y":345}},{"width":1280,"height":568}],"output":{"i1":{"x":127,"y":350},"i5":{"x":864,"y":345},"i0":{"x":1172,"y":12},"i2":{"x":12,"y":12},"i3":{"x":12,"y":112},"i4":{"x":12,"y":212}}}
+{"n":79,"name":"sortEntries","input":[[{"name":"run.pl","type":"file","mtimeMs":18},{"name":"b copy 2.txt","type":"file","mtimeMs":54},{"name":"a.txt","type":"file","mtimeMs":6},{"name":"notes.md","type":"file","mtimeMs":8},{"name":"notes.md","type":"file","mtimeMs":33}],"kind"],"output":["notes.md","notes.md","run.pl","a.txt","b copy 2.txt"]}
+{"n":80,"name":"rowsFor","input":[338],"output":3}
+{"n":81,"name":"readmePrograms","input":["# music happy\n\nAlgorithm dog simple tree and prolog number.\n\n```\nswipl run.pl\n```\n\nRun `start(8080).`."],"output":[{"kind":"terminal","command":"swipl run.pl","label":"swipl run.pl"},{"kind":"prolog","goal":"start(8080)","consult":[],"label":"start(8080)"}]}
+{"n":82,"name":"isTestPath","input":["src/app.js"],"output":false}
+{"n":83,"name":"testsFailed","input":[0,"true."],"output":false}
+{"n":84,"name":"daysBetween","input":["2026-11-10","2026-10-25"],"output":-16}
+{"n":85,"name":"repeatText","input":[{}],"output":""}
+{"n":86,"name":"isFinished","input":[{"status":"doing","daily":true,"finishedOn":"2026-03-26","lastDone":"2026-09-02"},"2026-03-24"],"output":false}
+{"n":87,"name":"kindOf","input":["site.url","dir"],"output":"dir"}
+{"n":88,"name":"displayName","input":["a.txt"],"output":"a.txt"}
+{"n":89,"name":"parseUrlFile","input":["javascript:alert(1)"],"output":null}
+{"n":90,"name":"safeUrl","input":["example.com"],"output":null}
+{"n":91,"name":"copyName","input":["a.txt",["a.txt"],false],"output":"a copy.txt"}
+{"n":92,"name":"copyPlan","input":[[{"name":"run.pl","path":"src/run.pl","type":"file"}],"src",["a.txt"]],"output":[{"from":"src/run.pl","to":"src/run.pl","name":"run.pl"}]}
+{"n":93,"name":"marquee hits","input":[{"x":377,"y":274},{"x":520,"y":369},[{"key":"k0","rect":{"left":455,"top":195,"right":535,"bottom":285}}],["k0"],"replace"],"output":["k0"]}
+{"n":94,"name":"edgeScroll","input":[424,0,500],"output":0}
+{"n":95,"name":"cleanUp","input":[[{"key":"i0","right":false},{"key":"i1","right":false},{"key":"i2","right":true}],{"width":800,"height":760}],"output":{"i0":{"x":12,"y":12},"i1":{"x":12,"y":112},"i2":{"x":692,"y":12}}}
+{"n":96,"name":"placeAll","input":[[{"key":"i0","right":true},{"key":"i1","right":false},{"key":"i2","right":true},{"key":"i3","right":false},{"key":"i4","right":false},{"key":"i5","right":true},{"key":"i6","right":true}],{"i0":{"x":574,"y":181},"i1":{"x":447,"y":2},"i3":{"x":828,"y":864},"i5":{"x":1265,"y":207},"i6":{"x":1025,"y":499}},{"width":390,"height":760}],"output":{"i0":{"x":282,"y":12},"i1":{"x":12,"y":12},"i2":{"x":282,"y":112},"i3":{"x":12,"y":112},"i4":{"x":12,"y":212},"i5":{"x":282,"y":212},"i6":{"x":282,"y":312}}}
+{"n":97,"name":"sortEntries","input":[[{"name":"a.txt","type":"file","mtimeMs":40},{"name":"a.txt","type":"file","mtimeMs":83}],"kind"],"output":["a.txt","a.txt"]}
+{"n":98,"name":"rowsFor","input":[350],"output":3}
+{"n":99,"name":"readmePrograms","input":["# finds\n\nProlog idea person buys meditates.\n\n```\nswipl run.pl\n```\n\nRun `start(8080).`."],"output":[{"kind":"terminal","command":"swipl run.pl","label":"swipl run.pl"},{"kind":"prolog","goal":"start(8080)","consult":[],"label":"start(8080)"}]}
+{"n":100,"name":"isTestPath","input":["src/app.js"],"output":false}
+{"n":101,"name":"testsFailed","input":[1,"true."],"output":true}
+{"n":102,"name":"daysBetween","input":["2026-09-06","2026-12-21"],"output":106}
+{"n":103,"name":"repeatText","input":[{"daily":true}],"output":"daily"}
+{"n":104,"name":"isFinished","input":[{"status":"doing","daily":true,"finishedOn":"2026-02-18","lastDone":"2026-01-18"},"2026-02-04"],"output":false}
+{"n":105,"name":"kindOf","input":["report 2.pdf","file"],"output":"pdf"}
+{"n":106,"name":"displayName","input":["notes.md"],"output":"notes.md"}
+{"n":107,"name":"parseUrlFile","input":["javascript:alert(1)"],"output":null}
+{"n":108,"name":"safeUrl","input":["https://example.com"],"output":"https://example.com/"}
+{"n":109,"name":"copyName","input":["a copy.txt",["b copy 2.txt"],false],"output":"a copy.txt"}
+{"n":110,"name":"copyPlan","input":[[{"name":"Docs","path":"src/Docs","type":"dir"},{"name":"run.pl","path":"src/run.pl","type":"file"}],"",[]],"output":[{"from":"src/Docs","to":"Docs","name":"Docs"},{"from":"src/run.pl","to":"run.pl","name":"run.pl"}]}
+{"n":111,"name":"marquee hits","input":[{"x":573,"y":47},{"x":122,"y":215},[{"key":"k0","rect":{"left":297,"top":30,"right":377,"bottom":120}},{"key":"k1","rect":{"left":181,"top":200,"right":261,"bottom":290}},{"key":"k2","rect":{"left":345,"top":103,"right":425,"bottom":193}},{"key":"k3","rect":{"left":262,"top":213,"right":342,"bottom":303}}],["k1","k2"],"toggle"],"output":["k0","k3"]}
+{"n":112,"name":"edgeScroll","input":[389,0,500],"output":0}
+{"n":113,"name":"cleanUp","input":[[{"key":"i0","right":false},{"key":"i1","right":false},{"key":"i2","right":false},{"key":"i3","right":false}],{"width":1280,"height":760}],"output":{"i0":{"x":12,"y":12},"i1":{"x":12,"y":112},"i2":{"x":12,"y":212},"i3":{"x":12,"y":312}}}
+{"n":114,"name":"placeAll","input":[[{"key":"i0","right":true},{"key":"i1","right":false},{"key":"i2","right":false},{"key":"i3","right":false},{"key":"i4","right":true},{"key":"i5","right":false},{"key":"i6","right":false},{"key":"i7","right":true}],{"i3":{"x":1015,"y":731},"i7":{"x":1015,"y":834}},{"width":1280,"height":760}],"output":{"i0":{"x":1172,"y":12},"i1":{"x":12,"y":12},"i2":{"x":12,"y":112},"i3":{"x":12,"y":212},"i4":{"x":1172,"y":112},"i5":{"x":12,"y":312},"i6":{"x":12,"y":412},"i7":{"x":1172,"y":212}}}
+{"n":115,"name":"sortEntries","input":[[{"name":"b copy 2.txt","type":"file","mtimeMs":97},{"name":"Docs","type":"dir","mtimeMs":56}],"kind"],"output":["Docs","b copy 2.txt"]}
+{"n":116,"name":"rowsFor","input":[208],"output":1}
+{"n":117,"name":"readmePrograms","input":["# book with\n\nGarden tree reads happy.\n\n```\nnode app.js\n```\n\nRun `main.`."],"output":[{"kind":"prolog","goal":"main","consult":[],"label":"main"}]}
+{"n":118,"name":"isTestPath","input":["spec/x.js"],"output":false}
+{"n":119,"name":"testsFailed","input":[0,"ok\n"],"output":false}
+{"n":120,"name":"daysBetween","input":["2026-06-25","2026-07-27"],"output":32}
+{"n":121,"name":"repeatText","input":[{"everyDays":7}],"output":"weekly"}
+{"n":122,"name":"isFinished","input":[{"status":"done","daily":true,"finishedOn":"2026-08-13","lastDone":"2026-06-04"},"2026-04-16"],"output":false}
+{"n":123,"name":"kindOf","input":["a.txt","file"],"output":"text"}
+{"n":124,"name":"displayName","input":["notes.md"],"output":"notes.md"}
+{"n":125,"name":"parseUrlFile","input":["javascript:alert(1)"],"output":null}
+{"n":126,"name":"safeUrl","input":["javascript:alert(1)"],"output":null}
+{"n":127,"name":"copyName","input":["a.txt",["a.txt","a.txt","image.png","a copy.txt"],true],"output":"a.txt copy"}
+{"n":128,"name":"copyPlan","input":[[{"name":"report 2.pdf","path":"src/report 2.pdf","type":"file"},{"name":"b copy 2.txt","path":"src/b copy 2.txt","type":"file"},{"name":"a copy.txt","path":"src/a copy.txt","type":"file"}],"",["run.pl"]],"output":[{"from":"src/report 2.pdf","to":"report 2.pdf","name":"report 2.pdf"},{"from":"src/b copy 2.txt","to":"b copy 2.txt","name":"b copy 2.txt"},{"from":"src/a copy.txt","to":"a copy.txt","name":"a copy.txt"}]}
+{"n":129,"name":"marquee hits","input":[{"x":455,"y":96},{"x":154,"y":133},[{"key":"k0","rect":{"left":332,"top":0,"right":412,"bottom":90}},{"key":"k1","rect":{"left":127,"top":299,"right":207,"bottom":389}}],["k0"],"toggle"],"output":["k0"]}
+{"n":130,"name":"edgeScroll","input":[388,0,500],"output":0}
+{"n":131,"name":"cleanUp","input":[[{"key":"i0","right":false},{"key":"i1","right":false},{"key":"i2","right":false},{"key":"i3","right":true}],{"width":800,"height":300}],"output":{"i0":{"x":12,"y":12},"i1":{"x":12,"y":112},"i2":{"x":108,"y":12},"i3":{"x":692,"y":12}}}
+{"n":132,"name":"placeAll","input":[[{"key":"i0","right":false},{"key":"i1","right":false},{"key":"i2","right":false},{"key":"i3","right":false}],{"i1":{"x":1240,"y":84},"i2":{"x":826,"y":237}},{"width":1280,"height":568}],"output":{"i2":{"x":826,"y":237},"i0":{"x":12,"y":12},"i1":{"x":12,"y":112},"i3":{"x":12,"y":212}}}
+{"n":133,"name":"sortEntries","input":[[{"name":"report 2.pdf","type":"file","mtimeMs":67},{"name":"a.txt","type":"file","mtimeMs":31}],"name"],"output":["a.txt","report 2.pdf"]}
+{"n":134,"name":"rowsFor","input":[418],"output":4}
+{"n":135,"name":"readmePrograms","input":["# person\n\nAbout meditates dog logic cat teacher sells thinks.\n\n```\nnpm test\n```\n\nRun `start(8080).`."],"output":[{"kind":"prolog","goal":"start(8080)","consult":[],"label":"start(8080)"}]}
+{"n":136,"name":"isTestPath","input":["testing.md"],"output":false}
+{"n":137,"name":"testsFailed","input":[1,"false."],"output":true}
+{"n":138,"name":"daysBetween","input":["2026-10-08","2026-05-09"],"output":-152}
+{"n":139,"name":"repeatText","input":[{"everyDays":0}],"output":""}
+{"n":140,"name":"isFinished","input":[{"status":"done","finishedOn":"2026-09-28","lastDone":"2026-09-12"},"2026-02-22"],"output":true}
+{"n":141,"name":"kindOf","input":["report 2.pdf","dir"],"output":"dir"}
+{"n":142,"name":"displayName","input":["notes.md"],"output":"notes.md"}
+{"n":143,"name":"parseUrlFile","input":["[InternetShortcut]\nURL=ftp://files"],"output":"ftp://files"}
+{"n":144,"name":"safeUrl","input":["http://a.b/c?d=1"],"output":"http://a.b/c?d=1"}
+{"n":145,"name":"copyName","input":["b copy 2.txt",[],false],"output":"b copy.txt"}
+{"n":146,"name":"copyPlan","input":[[{"name":"Docs","path":"src/Docs","type":"dir"}],"",[]],"output":[{"from":"src/Docs","to":"Docs","name":"Docs"}]}
+{"n":147,"name":"marquee hits","input":[{"x":267,"y":186},{"x":126,"y":283},[{"key":"k0","rect":{"left":488,"top":51,"right":568,"bottom":141}},{"key":"k1","rect":{"left":452,"top":194,"right":532,"bottom":284}}],["k0","k0"],"replace"],"output":[]}
+{"n":148,"name":"edgeScroll","input":[181,0,500],"output":0}
+{"n":149,"name":"cleanUp","input":[[{"key":"i0","right":false},{"key":"i1","right":true},{"key":"i2","right":false},{"key":"i3","right":false},{"key":"i4","right":false},{"key":"i5","right":false},{"key":"i6","right":false},{"key":"i7","right":false},{"key":"i8","right":false},{"key":"i9","right":false},{"key":"i10","right":false}],{"width":800,"height":760}],"output":{"i0":{"x":12,"y":12},"i1":{"x":692,"y":12},"i2":{"x":12,"y":112},"i3":{"x":12,"y":212},"i4":{"x":12,"y":312},"i5":{"x":12,"y":412},"i6":{"x":12,"y":512},"i7":{"x":12,"y":612},"i8":{"x":108,"y":12},"i9":{"x":108,"y":112},"i10":{"x":108,"y":212}}}
+{"n":150,"name":"placeAll","input":[[{"key":"i0","right":false},{"key":"i1","right":false},{"key":"i2","right":false},{"key":"i3","right":false},{"key":"i4","right":true},{"key":"i5","right":true},{"key":"i6","right":false},{"key":"i7","right":true}],{"i0":{"x":1205,"y":169},"i2":{"x":859,"y":89},"i7":{"x":940,"y":630}},{"width":390,"height":760}],"output":{"i0":{"x":12,"y":12},"i1":{"x":12,"y":112},"i2":{"x":12,"y":212},"i3":{"x":12,"y":312},"i4":{"x":282,"y":12},"i5":{"x":282,"y":112},"i6":{"x":12,"y":412},"i7":{"x":282,"y":212}}}
+{"n":151,"name":"sortEntries","input":[[{"name":"run.pl","type":"file","mtimeMs":75},{"name":"notes.md","type":"file","mtimeMs":64},{"name":"notes.md","type":"file","mtimeMs":68},{"name":"notes.md","type":"file","mtimeMs":3}],"date"],"output":["run.pl","notes.md","notes.md","notes.md"]}
+{"n":152,"name":"rowsFor","input":[980],"output":9}
+{"n":153,"name":"readmePrograms","input":["# list\n\nA runs writes a.\n\n```\n?- main.\n```\n\nRun `main.`."],"output":[{"kind":"prolog","goal":"main","consult":[],"label":"main"}]}
+{"n":154,"name":"isTestPath","input":["src/app.js"],"output":false}
+{"n":155,"name":"testsFailed","input":[2,"ERROR: x"],"output":true}
+{"n":156,"name":"daysBetween","input":["2026-04-26","2026-06-14"],"output":49}
+{"n":157,"name":"repeatText","input":[{"everyDays":30}],"output":"every 30 days"}
+{"n":158,"name":"isFinished","input":[{"status":"doing","everyDays":3,"finishedOn":"2026-06-09","lastDone":"2026-07-18"},"2026-12-09"],"output":false}
+{"n":159,"name":"kindOf","input":["a.txt","dir"],"output":"dir"}
+{"n":160,"name":"displayName","input":["a.txt"],"output":"a.txt"}
+{"n":161,"name":"parseUrlFile","input":["[InternetShortcut]\nURL=https://example.com/a"],"output":"https://example.com/a"}
+{"n":162,"name":"safeUrl","input":[" https://x.y "],"output":"https://x.y/"}
+{"n":163,"name":"copyName","input":["run.pl",["b copy 2.txt","run.pl","a.txt","b copy 2.txt"],true],"output":"run.pl copy"}
+{"n":164,"name":"copyPlan","input":[[{"name":"report 2.pdf","path":"src/report 2.pdf","type":"file"}],"src",["image.png","notes.md"]],"output":[{"from":"src/report 2.pdf","to":"src/report 2.pdf","name":"report 2.pdf"}]}
+{"n":165,"name":"marquee hits","input":[{"x":576,"y":48},{"x":9,"y":202},[{"key":"k0","rect":{"left":329,"top":101,"right":409,"bottom":191}},{"key":"k1","rect":{"left":10,"top":169,"right":90,"bottom":259}},{"key":"k2","rect":{"left":412,"top":253,"right":492,"bottom":343}},{"key":"k3","rect":{"left":240,"top":33,"right":320,"bottom":123}}],[],"replace"],"output":["k0","k1","k3"]}
+{"n":166,"name":"edgeScroll","input":[260,0,500],"output":0}
+{"n":167,"name":"cleanUp","input":[[{"key":"i0","right":false},{"key":"i1","right":false}],{"width":1280,"height":300}],"output":{"i0":{"x":12,"y":12},"i1":{"x":12,"y":112}}}
+{"n":168,"name":"placeAll","input":[[{"key":"i0","right":false},{"key":"i1","right":false},{"key":"i2","right":false},{"key":"i3","right":false},{"key":"i4","right":false},{"key":"i5","right":false},{"key":"i6","right":false}],{"i0":{"x":1112,"y":550},"i5":{"x":146,"y":11}},{"width":1280,"height":760}],"output":{"i0":{"x":1112,"y":550},"i5":{"x":146,"y":11},"i1":{"x":12,"y":12},"i2":{"x":12,"y":112},"i3":{"x":12,"y":212},"i4":{"x":12,"y":312},"i6":{"x":12,"y":412}}}
+{"n":169,"name":"sortEntries","input":[[{"name":"b copy 2.txt","type":"file","mtimeMs":19},{"name":"Docs","type":"dir","mtimeMs":43},{"name":"report 2.pdf","type":"file","mtimeMs":55},{"name":"run.pl","type":"file","mtimeMs":52},{"name":"notes.md","type":"file","mtimeMs":21},{"name":"Docs","type":"dir","mtimeMs":39}],"kind"],"output":["Docs","Docs","notes.md","report 2.pdf","run.pl","b copy 2.txt"]}
+{"n":170,"name":"rowsFor","input":[1117],"output":11}
+{"n":171,"name":"readmePrograms","input":["# algorithm\n\nStudent simple false and data happy green.\n\n```\nnpm test\n```\n\nRun `go`."],"output":[]}
+{"n":172,"name":"isTestPath","input":["tests/t.pl"],"output":true}
+{"n":173,"name":"testsFailed","input":[2,"Warning: ... goal (directive) failed"],"output":true}
+{"n":174,"name":"daysBetween","input":["2026-08-04","2026-08-08"],"output":4}
+{"n":175,"name":"repeatText","input":[{"everyDays":7}],"output":"weekly"}
+{"n":176,"name":"isFinished","input":[{"status":"todo","everyDays":3,"finishedOn":"2026-10-04","lastDone":"2026-10-22"},"2026-02-07"],"output":true}
+{"n":177,"name":"kindOf","input":["x.lsheet","file"],"output":"other"}
+{"n":178,"name":"displayName","input":["Google.url"],"output":"Google"}
+{"n":179,"name":"parseUrlFile","input":["URL=http://x.org"],"output":"http://x.org"}
+{"n":180,"name":"safeUrl","input":["mailto:x@y.z"],"output":null}
+{"n":181,"name":"copyName","input":["notes.md",["Docs","notes.md"],false],"output":"notes copy.md"}
+{"n":182,"name":"copyPlan","input":[[{"name":"Docs","path":"src/Docs","type":"dir"},{"name":"a copy.txt","path":"src/a copy.txt","type":"file"}],"src",["report 2.pdf","run.pl","image.png"]],"output":[{"from":"src/Docs","to":"src/Docs","name":"Docs"},{"from":"src/a copy.txt","to":"src/a copy.txt","name":"a copy.txt"}]}
+{"n":183,"name":"marquee hits","input":[{"x":212,"y":264},{"x":87,"y":359},[{"key":"k0","rect":{"left":60,"top":10,"right":140,"bottom":100}}],["k1","k2"],"add"],"output":["k1","k2"]}
+{"n":184,"name":"edgeScroll","input":[148,0,500],"output":0}
+{"n":185,"name":"cleanUp","input":[[{"key":"i0","right":false},{"key":"i1","right":false},{"key":"i2","right":false}],{"width":1280,"height":760}],"output":{"i0":{"x":12,"y":12},"i1":{"x":12,"y":112},"i2":{"x":12,"y":212}}}
+{"n":186,"name":"placeAll","input":[[{"key":"i0","right":false},{"key":"i1","right":false},{"key":"i2","right":true},{"key":"i3","right":false},{"key":"i4","right":false},{"key":"i5","right":false},{"key":"i6","right":false}],{"i0":{"x":539,"y":275},"i2":{"x":1104,"y":895}},{"width":1280,"height":568}],"output":{"i0":{"x":539,"y":275},"i1":{"x":12,"y":12},"i2":{"x":1172,"y":12},"i3":{"x":12,"y":112},"i4":{"x":12,"y":212},"i5":{"x":12,"y":312},"i6":{"x":12,"y":412}}}
+{"n":187,"name":"sortEntries","input":[[{"name":"a.txt","type":"file","mtimeMs":33},{"name":"a.txt","type":"file","mtimeMs":33},{"name":"run.pl","type":"file","mtimeMs":22}],"name"],"output":["a.txt","a.txt","run.pl"]}
+{"n":188,"name":"rowsFor","input":[179],"output":1}
+{"n":189,"name":"readmePrograms","input":["# logic blue\n\nTree house a about algorithm data runs list a.\n\n```\nnpm test\n```\n\nRun `start(8080).`."],"output":[{"kind":"prolog","goal":"start(8080)","consult":[],"label":"start(8080)"}]}
+{"n":190,"name":"isTestPath","input":["test/a.test.js"],"output":true}
+{"n":191,"name":"testsFailed","input":[2,"Warning: ... goal (directive) failed"],"output":true}
+{"n":192,"name":"daysBetween","input":["2026-09-18","2026-11-25"],"output":68}
+{"n":193,"name":"repeatText","input":[{"everyDays":0}],"output":""}
+{"n":194,"name":"isFinished","input":[{"status":"doing","everyDays":3,"finishedOn":"2026-12-23","lastDone":"2026-08-20"},"2026-08-13"],"output":true}
+{"n":195,"name":"kindOf","input":["b copy 2.txt","dir"],"output":"dir"}
+{"n":196,"name":"displayName","input":["report 2.pdf"],"output":"report 2.pdf"}
+{"n":197,"name":"parseUrlFile","input":["javascript:alert(1)"],"output":null}
+{"n":198,"name":"safeUrl","input":["javascript:alert(1)"],"output":null}
+{"n":199,"name":"copyName","input":["notes.md",["b copy 2.txt","run.pl"],false],"output":"notes copy.md"}
+{"n":200,"name":"copyPlan","input":[[{"name":"image.png","path":"src/image.png","type":"file"},{"name":"b copy 2.txt","path":"src/b copy 2.txt","type":"file"},{"name":"a.txt","path":"src/a.txt","type":"file"}],"",["image.png"]],"output":[{"from":"src/image.png","to":"image copy.png","name":"image copy.png"},{"from":"src/b copy 2.txt","to":"b copy 2.txt","name":"b copy 2.txt"},{"from":"src/a.txt","to":"a.txt","name":"a.txt"}]}
