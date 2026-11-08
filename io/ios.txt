@@ -1,0 +1,402 @@
+LucianOS: 200 inputs and outputs, from real runs (npm run ios writes this file; npm test checks it).
+
+1. copyName("b copy 2.txt", [], false)
+   => "b copy.txt"
+2. copyPlan([{"name":"run.pl","path":"src/run.pl","type":"file"},{"name":"notes.md","path":"src/notes.md","type":"file"},{"name":"report 2.pdf","path":"src/report 2.pdf","type":"file"}], "", ["run.pl"])
+   => [{"from":"src/run.pl","to":"run copy.pl","name":"run copy.pl"},{"from":"src/notes.md","to":"notes.md","name":"notes.md"},{"from":"src/report 2.pdf","to":"report 2.pdf","name":"report 2.pdf"}]
+3. marquee hits({"x":273,"y":196}, {"x":83,"y":161}, [{"key":"k0","rect":{"left":77,"top":147,"right":157,"bottom":237}},{"key":"k1","rect":{"left":33,"top":118,"right":113,"bottom":208}}], ["k0","k0"], "replace")
+   => ["k0","k1"]
+4. edgeScroll(209, 0, 500)
+   => 0
+5. cleanUp([{"key":"i0","right":false},{"key":"i1","right":true},{"key":"i2","right":true},{"key":"i3","right":false},{"key":"i4","right":false},{"key":"i5","right":false},{"key":"i6","right":true},{"key":"i7","right":false}], {"width":800,"height":760})
+   => {"i0":{"x":12,"y":12},"i1":{"x":692,"y":12},"i2":{"x":692,"y":112},"i3":{"x":12,"y":112},"i4":{"x":12,"y":212},"i5":{"x":12,"y":312},"i6":{"x":692,"y":212},"i7":{"x":12,"y":412}}
+6. placeAll([{"key":"i0","right":true},{"key":"i1","right":false},{"key":"i2","right":true},{"key":"i3","right":false},{"key":"i4","right":false},{"key":"i5","right":true},{"key":"i6","right":true},{"key":"i7","right":false}], {"i1":{"x":934,"y":362},"i2":{"x":393,"y":610},"i3":{"x":1239,"y":831},"i6":{"x":901,"y":827}}, {"width":1280,"height":760})
+   => {"i1":{"x":934,"y":362},"i2":{"x":393,"y":610},"i0":{"x":1172,"y":12},"i3":{"x":12,"y":12},"i4":{"x":12,"y":112},"i5":{"x":1172,"y":112},"i6":{"x":1172,"y":212},"i7":{"x":12,"y":212}}
+7. sortEntries([{"name":"a.txt","type":"file","mtimeMs":30},{"name":"image.png","type":"file","mtimeMs":89}], "kind")
+   => ["image.png","a.txt"]
+8. rowsFor(1124)
+   => 11
+9. readmePrograms("# a buys\n\nThe dog a tree reads teacher runs sells with.\n\n```\n?- main.\n```\n\nRun `main.`.")
+   => [{"kind":"prolog","goal":"main","consult":[],"label":"main"}]
+10. isTestPath("testing.md")
+   => false
+11. testsFailed(2, "# fail 2")
+   => true
+12. daysBetween("2026-02-09", "2026-11-09")
+   => 273
+13. repeatText({"everyDays":0})
+   => ""
+14. isFinished({"status":"done","daily":true,"finishedOn":"2026-02-02","lastDone":"2026-04-19"}, "2026-08-04")
+   => false
+15. kindOf("image.png", "file")
+   => "image"
+16. displayName("notes.md")
+   => "notes.md"
+17. parseUrlFile("[InternetShortcut]\nURL=ftp://files")
+   => "ftp://files"
+18. safeUrl("http://a.b/c?d=1")
+   => "http://a.b/c?d=1"
+19. copyName("run.pl", ["image.png","a.txt","a copy.txt","a.txt"], false)
+   => "run copy.pl"
+20. copyPlan([{"name":"b copy 2.txt","path":"src/b copy 2.txt","type":"file"}], "", [])
+   => [{"from":"src/b copy 2.txt","to":"b copy 2.txt","name":"b copy 2.txt"}]
+21. marquee hits({"x":150,"y":348}, {"x":477,"y":317}, [{"key":"k0","rect":{"left":48,"top":44,"right":128,"bottom":134}},{"key":"k1","rect":{"left":204,"top":163,"right":284,"bottom":253}}], [], "toggle")
+   => []
+22. edgeScroll(145, 0, 500)
+   => 0
+23. cleanUp([{"key":"i0","right":false},{"key":"i1","right":false},{"key":"i2","right":false},{"key":"i3","right":true},{"key":"i4","right":false},{"key":"i5","right":false},{"key":"i6","right":true},{"key":"i7","right":true},{"key":"i8","right":false},{"key":"i9","right":false},{"key":"i10","right":true}], {"width":390,"height":300})
+   => {"i0":{"x":12,"y":12},"i1":{"x":12,"y":112},"i2":{"x":108,"y":12},"i3":{"x":282,"y":12},"i4":{"x":108,"y":112},"i5":{"x":204,"y":12},"i6":{"x":282,"y":112},"i7":{"x":186,"y":12},"i8":{"x":204,"y":112},"i9":{"x":300,"y":12},"i10":{"x":186,"y":112}}
+24. placeAll([{"key":"i0","right":false}], {"i0":{"x":317,"y":133}}, {"width":1280,"height":568})
+   => {"i0":{"x":317,"y":133}}
+25. sortEntries([{"name":"report 2.pdf","type":"file","mtimeMs":77},{"name":"Docs","type":"dir","mtimeMs":80},{"name":"b copy 2.txt","type":"file","mtimeMs":6},{"name":"notes.md","type":"file","mtimeMs":21},{"name":"a copy.txt","type":"file","mtimeMs":64},{"name":"report 2.pdf","type":"file","mtimeMs":65}], "name")
+   => ["a copy.txt","b copy 2.txt","Docs","notes.md","report 2.pdf","report 2.pdf"]
+26. rowsFor(391)
+   => 3
+27. readmePrograms("# true\n\nGreen green list apple data about algorithm.\n\n```\n?- main.\n```\n\nRun `main.`.")
+   => [{"kind":"prolog","goal":"main","consult":[],"label":"main"}]
+28. isTestPath("test/a.test.js")
+   => true
+29. testsFailed(2, "# pass 3\n# fail 0")
+   => true
+30. daysBetween("2026-09-08", "2026-08-09")
+   => -30
+31. repeatText({})
+   => ""
+32. isFinished({"status":"todo","daily":true,"finishedOn":"2026-09-02","lastDone":"2026-07-11"}, "2026-10-08")
+   => false
+33. kindOf("a copy.txt", "dir")
+   => "dir"
+34. displayName(".hidden")
+   => ".hidden"
+35. parseUrlFile("[InternetShortcut]\nURL=https://example.com/a")
+   => "https://example.com/a"
+36. safeUrl(" https://x.y ")
+   => "https://x.y/"
+37. copyName("a.txt", ["report 2.pdf"], false)
+   => "a copy.txt"
+38. copyPlan([{"name":"b copy 2.txt","path":"src/b copy 2.txt","type":"file"},{"name":"a copy.txt","path":"src/a copy.txt","type":"file"}], "src", ["report 2.pdf","report 2.pdf","a.txt"])
+   => [{"from":"src/b copy 2.txt","to":"src/b copy 2.txt","name":"b copy 2.txt"},{"from":"src/a copy.txt","to":"src/a copy.txt","name":"a copy.txt"}]
+39. marquee hits({"x":98,"y":250}, {"x":142,"y":62}, [{"key":"k0","rect":{"left":306,"top":5,"right":386,"bottom":95}},{"key":"k1","rect":{"left":33,"top":9,"right":113,"bottom":99}},{"key":"k2","rect":{"left":201,"top":203,"right":281,"bottom":293}},{"key":"k3","rect":{"left":327,"top":240,"right":407,"bottom":330}}], ["k2"], "toggle")
+   => ["k1","k2"]
+40. edgeScroll(-18, 0, 500)
+   => -18
+41. cleanUp([{"key":"i0","right":false},{"key":"i1","right":true},{"key":"i2","right":false},{"key":"i3","right":false},{"key":"i4","right":false},{"key":"i5","right":false},{"key":"i6","right":true},{"key":"i7","right":true},{"key":"i8","right":false},{"key":"i9","right":false},{"key":"i10","right":true}], {"width":800,"height":568})
+   => {"i0":{"x":12,"y":12},"i1":{"x":692,"y":12},"i2":{"x":12,"y":112},"i3":{"x":12,"y":212},"i4":{"x":12,"y":312},"i5":{"x":12,"y":412},"i6":{"x":692,"y":112},"i7":{"x":692,"y":212},"i8":{"x":108,"y":12},"i9":{"x":108,"y":112},"i10":{"x":692,"y":312}}
+42. placeAll([{"key":"i0","right":false},{"key":"i1","right":false},{"key":"i2","right":false},{"key":"i3","right":true},{"key":"i4","right":false},{"key":"i5","right":false}], {"i0":{"x":43,"y":722},"i3":{"x":1245,"y":303},"i4":{"x":1184,"y":765}}, {"width":1280,"height":568})
+   => {"i0":{"x":12,"y":12},"i1":{"x":12,"y":112},"i2":{"x":12,"y":212},"i3":{"x":1172,"y":12},"i4":{"x":12,"y":312},"i5":{"x":12,"y":412}}
+43. sortEntries([{"name":"Docs","type":"dir","mtimeMs":65},{"name":"a copy.txt","type":"file","mtimeMs":5},{"name":"a copy.txt","type":"file","mtimeMs":60},{"name":"run.pl","type":"file","mtimeMs":60}], "name")
+   => ["a copy.txt","a copy.txt","Docs","run.pl"]
+44. rowsFor(184)
+   => 1
+45. readmePrograms("# logic apple\n\nQuickly dog number and apple number.\n\n```\nswipl run.pl\n```\n\nRun `go`.")
+   => [{"kind":"terminal","command":"swipl run.pl","label":"swipl run.pl"}]
+46. isTestPath("lib/test-utils.js")
+   => false
+47. testsFailed(0, "false.")
+   => false
+48. daysBetween("2026-11-17", "2026-08-12")
+   => -97
+49. repeatText({"everyDays":19})
+   => "every 19 days"
+50. isFinished({"status":"doing","everyDays":7}, "2026-03-05")
+   => false
+51. kindOf("deck.lpres", "file")
+   => "other"
+52. displayName(".hidden")
+   => ".hidden"
+53. parseUrlFile("javascript:alert(1)")
+   => null
+54. safeUrl("example.com")
+   => null
+55. copyName("Docs", [], false)
+   => "Docs copy"
+56. copyPlan([{"name":"image.png","path":"src/image.png","type":"file"},{"name":"a.txt","path":"src/a.txt","type":"file"}], "src", ["image.png","a copy.txt","notes.md"])
+   => [{"from":"src/image.png","to":"src/image copy.png","name":"image copy.png"},{"from":"src/a.txt","to":"src/a.txt","name":"a.txt"}]
+57. marquee hits({"x":448,"y":13}, {"x":140,"y":21}, [{"key":"k0","rect":{"left":469,"top":95,"right":549,"bottom":185}},{"key":"k1","rect":{"left":204,"top":202,"right":284,"bottom":292}}], [], "add")
+   => []
+58. edgeScroll(415, 0, 500)
+   => 0
+59. cleanUp([{"key":"i0","right":false},{"key":"i1","right":true},{"key":"i2","right":false},{"key":"i3","right":false},{"key":"i4","right":false},{"key":"i5","right":false},{"key":"i6","right":false},{"key":"i7","right":false}], {"width":390,"height":568})
+   => {"i0":{"x":12,"y":12},"i1":{"x":282,"y":12},"i2":{"x":12,"y":112},"i3":{"x":12,"y":212},"i4":{"x":12,"y":312},"i5":{"x":12,"y":412},"i6":{"x":108,"y":12},"i7":{"x":108,"y":112}}
+60. placeAll([{"key":"i0","right":false},{"key":"i1","right":false},{"key":"i2","right":false},{"key":"i3","right":false},{"key":"i4","right":true}], {"i0":{"x":1035,"y":277},"i1":{"x":1052,"y":816},"i2":{"x":551,"y":168},"i4":{"x":721,"y":485}}, {"width":390,"height":760})
+   => {"i0":{"x":12,"y":12},"i1":{"x":12,"y":112},"i2":{"x":12,"y":212},"i3":{"x":12,"y":312},"i4":{"x":282,"y":12}}
+61. sortEntries([{"name":"report 2.pdf","type":"file","mtimeMs":56},{"name":"Docs","type":"dir","mtimeMs":4},{"name":"a.txt","type":"file","mtimeMs":56},{"name":"Docs","type":"dir","mtimeMs":35},{"name":"a copy.txt","type":"file","mtimeMs":57}], "name")
+   => ["a copy.txt","a.txt","Docs","Docs","report 2.pdf"]
+62. rowsFor(166)
+   => 1
+63. readmePrograms("# runs\n\nNumber prolog writes tree a.\n\n```\nnpm test\n```\n\nRun `start(8080).`.")
+   => [{"kind":"prolog","goal":"start(8080)","consult":[],"label":"start(8080)"}]
+64. isTestPath("tests/t.pl")
+   => true
+65. testsFailed(1, "# pass 3\n# fail 0")
+   => true
+66. daysBetween("2026-02-10", "2026-08-28")
+   => 199
+67. repeatText({"everyDays":0})
+   => ""
+68. isFinished({"status":"done","daily":true,"finishedOn":"2026-01-17","lastDone":"2026-08-15"}, "2026-01-09")
+   => false
+69. kindOf("a copy.txt", "file")
+   => "text"
+70. displayName(".hidden")
+   => ".hidden"
+71. parseUrlFile("")
+   => null
+72. safeUrl("data:text/html,x")
+   => null
+73. copyName("image.png", ["a.txt","notes.md"], false)
+   => "image copy.png"
+74. copyPlan([{"name":"notes.md","path":"src/notes.md","type":"file"}], "", ["Docs","image.png","image.png"])
+   => [{"from":"src/notes.md","to":"notes.md","name":"notes.md"}]
+75. marquee hits({"x":375,"y":72}, {"x":35,"y":71}, [{"key":"k0","rect":{"left":242,"top":153,"right":322,"bottom":243}},{"key":"k1","rect":{"left":227,"top":99,"right":307,"bottom":189}},{"key":"k2","rect":{"left":314,"top":233,"right":394,"bottom":323}},{"key":"k3","rect":{"left":409,"top":25,"right":489,"bottom":115}}], ["k1","k1"], "toggle")
+   => ["k1"]
+76. edgeScroll(256, 0, 500)
+   => 0
+77. cleanUp([{"key":"i0","right":false},{"key":"i1","right":false},{"key":"i2","right":false},{"key":"i3","right":false},{"key":"i4","right":true}], {"width":1280,"height":568})
+   => {"i0":{"x":12,"y":12},"i1":{"x":12,"y":112},"i2":{"x":12,"y":212},"i3":{"x":12,"y":312},"i4":{"x":1172,"y":12}}
+78. placeAll([{"key":"i0","right":true},{"key":"i1","right":true},{"key":"i2","right":false},{"key":"i3","right":false},{"key":"i4","right":false},{"key":"i5","right":false}], {"i0":{"x":1269,"y":263},"i1":{"x":127,"y":350},"i5":{"x":864,"y":345}}, {"width":1280,"height":568})
+   => {"i1":{"x":127,"y":350},"i5":{"x":864,"y":345},"i0":{"x":1172,"y":12},"i2":{"x":12,"y":12},"i3":{"x":12,"y":112},"i4":{"x":12,"y":212}}
+79. sortEntries([{"name":"run.pl","type":"file","mtimeMs":18},{"name":"b copy 2.txt","type":"file","mtimeMs":54},{"name":"a.txt","type":"file","mtimeMs":6},{"name":"notes.md","type":"file","mtimeMs":8},{"name":"notes.md","type":"file","mtimeMs":33}], "kind")
+   => ["notes.md","notes.md","run.pl","a.txt","b copy 2.txt"]
+80. rowsFor(338)
+   => 3
+81. readmePrograms("# music happy\n\nAlgorithm dog simple tree and prolog number.\n\n```\nswipl run.pl\n```\n\nRun `start(8080).`.")
+   => [{"kind":"terminal","command":"swipl run.pl","label":"swipl run.pl"},{"kind":"prolog","goal":"start(8080)","consult":[],"label":"start(8080)"}]
+82. isTestPath("src/app.js")
+   => false
+83. testsFailed(0, "true.")
+   => false
+84. daysBetween("2026-11-10", "2026-10-25")
+   => -16
+85. repeatText({})
+   => ""
+86. isFinished({"status":"doing","daily":true,"finishedOn":"2026-03-26","lastDone":"2026-09-02"}, "2026-03-24")
+   => false
+87. kindOf("site.url", "dir")
+   => "dir"
+88. displayName("a.txt")
+   => "a.txt"
+89. parseUrlFile("javascript:alert(1)")
+   => null
+90. safeUrl("example.com")
+   => null
+91. copyName("a.txt", ["a.txt"], false)
+   => "a copy.txt"
+92. copyPlan([{"name":"run.pl","path":"src/run.pl","type":"file"}], "src", ["a.txt"])
+   => [{"from":"src/run.pl","to":"src/run.pl","name":"run.pl"}]
+93. marquee hits({"x":377,"y":274}, {"x":520,"y":369}, [{"key":"k0","rect":{"left":455,"top":195,"right":535,"bottom":285}}], ["k0"], "replace")
+   => ["k0"]
+94. edgeScroll(424, 0, 500)
+   => 0
+95. cleanUp([{"key":"i0","right":false},{"key":"i1","right":false},{"key":"i2","right":true}], {"width":800,"height":760})
+   => {"i0":{"x":12,"y":12},"i1":{"x":12,"y":112},"i2":{"x":692,"y":12}}
+96. placeAll([{"key":"i0","right":true},{"key":"i1","right":false},{"key":"i2","right":true},{"key":"i3","right":false},{"key":"i4","right":false},{"key":"i5","right":true},{"key":"i6","right":true}], {"i0":{"x":574,"y":181},"i1":{"x":447,"y":2},"i3":{"x":828,"y":864},"i5":{"x":1265,"y":207},"i6":{"x":1025,"y":499}}, {"width":390,"height":760})
+   => {"i0":{"x":282,"y":12},"i1":{"x":12,"y":12},"i2":{"x":282,"y":112},"i3":{"x":12,"y":112},"i4":{"x":12,"y":212},"i5":{"x":282,"y":212},"i6":{"x":282,"y":312}}
+97. sortEntries([{"name":"a.txt","type":"file","mtimeMs":40},{"name":"a.txt","type":"file","mtimeMs":83}], "kind")
+   => ["a.txt","a.txt"]
+98. rowsFor(350)
+   => 3
+99. readmePrograms("# finds\n\nProlog idea person buys meditates.\n\n```\nswipl run.pl\n```\n\nRun `start(8080).`.")
+   => [{"kind":"terminal","command":"swipl run.pl","label":"swipl run.pl"},{"kind":"prolog","goal":"start(8080)","consult":[],"label":"start(8080)"}]
+100. isTestPath("src/app.js")
+   => false
+101. testsFailed(1, "true.")
+   => true
+102. daysBetween("2026-09-06", "2026-12-21")
+   => 106
+103. repeatText({"daily":true})
+   => "daily"
+104. isFinished({"status":"doing","daily":true,"finishedOn":"2026-02-18","lastDone":"2026-01-18"}, "2026-02-04")
+   => false
+105. kindOf("report 2.pdf", "file")
+   => "pdf"
+106. displayName("notes.md")
+   => "notes.md"
+107. parseUrlFile("javascript:alert(1)")
+   => null
+108. safeUrl("https://example.com")
+   => "https://example.com/"
+109. copyName("a copy.txt", ["b copy 2.txt"], false)
+   => "a copy.txt"
+110. copyPlan([{"name":"Docs","path":"src/Docs","type":"dir"},{"name":"run.pl","path":"src/run.pl","type":"file"}], "", [])
+   => [{"from":"src/Docs","to":"Docs","name":"Docs"},{"from":"src/run.pl","to":"run.pl","name":"run.pl"}]
+111. marquee hits({"x":573,"y":47}, {"x":122,"y":215}, [{"key":"k0","rect":{"left":297,"top":30,"right":377,"bottom":120}},{"key":"k1","rect":{"left":181,"top":200,"right":261,"bottom":290}},{"key":"k2","rect":{"left":345,"top":103,"right":425,"bottom":193}},{"key":"k3","rect":{"left":262,"top":213,"right":342,"bottom":303}}], ["k1","k2"], "toggle")
+   => ["k0","k3"]
+112. edgeScroll(389, 0, 500)
+   => 0
+113. cleanUp([{"key":"i0","right":false},{"key":"i1","right":false},{"key":"i2","right":false},{"key":"i3","right":false}], {"width":1280,"height":760})
+   => {"i0":{"x":12,"y":12},"i1":{"x":12,"y":112},"i2":{"x":12,"y":212},"i3":{"x":12,"y":312}}
+114. placeAll([{"key":"i0","right":true},{"key":"i1","right":false},{"key":"i2","right":false},{"key":"i3","right":false},{"key":"i4","right":true},{"key":"i5","right":false},{"key":"i6","right":false},{"key":"i7","right":true}], {"i3":{"x":1015,"y":731},"i7":{"x":1015,"y":834}}, {"width":1280,"height":760})
+   => {"i0":{"x":1172,"y":12},"i1":{"x":12,"y":12},"i2":{"x":12,"y":112},"i3":{"x":12,"y":212},"i4":{"x":1172,"y":112},"i5":{"x":12,"y":312},"i6":{"x":12,"y":412},"i7":{"x":1172,"y":212}}
+115. sortEntries([{"name":"b copy 2.txt","type":"file","mtimeMs":97},{"name":"Docs","type":"dir","mtimeMs":56}], "kind")
+   => ["Docs","b copy 2.txt"]
+116. rowsFor(208)
+   => 1
+117. readmePrograms("# book with\n\nGarden tree reads happy.\n\n```\nnode app.js\n```\n\nRun `main.`.")
+   => [{"kind":"prolog","goal":"main","consult":[],"label":"main"}]
+118. isTestPath("spec/x.js")
+   => false
+119. testsFailed(0, "ok\n")
+   => false
+120. daysBetween("2026-06-25", "2026-07-27")
+   => 32
+121. repeatText({"everyDays":7})
+   => "weekly"
+122. isFinished({"status":"done","daily":true,"finishedOn":"2026-08-13","lastDone":"2026-06-04"}, "2026-04-16")
+   => false
+123. kindOf("a.txt", "file")
+   => "text"
+124. displayName("notes.md")
+   => "notes.md"
+125. parseUrlFile("javascript:alert(1)")
+   => null
+126. safeUrl("javascript:alert(1)")
+   => null
+127. copyName("a.txt", ["a.txt","a.txt","image.png","a copy.txt"], true)
+   => "a.txt copy"
+128. copyPlan([{"name":"report 2.pdf","path":"src/report 2.pdf","type":"file"},{"name":"b copy 2.txt","path":"src/b copy 2.txt","type":"file"},{"name":"a copy.txt","path":"src/a copy.txt","type":"file"}], "", ["run.pl"])
+   => [{"from":"src/report 2.pdf","to":"report 2.pdf","name":"report 2.pdf"},{"from":"src/b copy 2.txt","to":"b copy 2.txt","name":"b copy 2.txt"},{"from":"src/a copy.txt","to":"a copy.txt","name":"a copy.txt"}]
+129. marquee hits({"x":455,"y":96}, {"x":154,"y":133}, [{"key":"k0","rect":{"left":332,"top":0,"right":412,"bottom":90}},{"key":"k1","rect":{"left":127,"top":299,"right":207,"bottom":389}}], ["k0"], "toggle")
+   => ["k0"]
+130. edgeScroll(388, 0, 500)
+   => 0
+131. cleanUp([{"key":"i0","right":false},{"key":"i1","right":false},{"key":"i2","right":false},{"key":"i3","right":true}], {"width":800,"height":300})
+   => {"i0":{"x":12,"y":12},"i1":{"x":12,"y":112},"i2":{"x":108,"y":12},"i3":{"x":692,"y":12}}
+132. placeAll([{"key":"i0","right":false},{"key":"i1","right":false},{"key":"i2","right":false},{"key":"i3","right":false}], {"i1":{"x":1240,"y":84},"i2":{"x":826,"y":237}}, {"width":1280,"height":568})
+   => {"i2":{"x":826,"y":237},"i0":{"x":12,"y":12},"i1":{"x":12,"y":112},"i3":{"x":12,"y":212}}
+133. sortEntries([{"name":"report 2.pdf","type":"file","mtimeMs":67},{"name":"a.txt","type":"file","mtimeMs":31}], "name")
+   => ["a.txt","report 2.pdf"]
+134. rowsFor(418)
+   => 4
+135. readmePrograms("# person\n\nAbout meditates dog logic cat teacher sells thinks.\n\n```\nnpm test\n```\n\nRun `start(8080).`.")
+   => [{"kind":"prolog","goal":"start(8080)","consult":[],"label":"start(8080)"}]
+136. isTestPath("testing.md")
+   => false
+137. testsFailed(1, "false.")
+   => true
+138. daysBetween("2026-10-08", "2026-05-09")
+   => -152
+139. repeatText({"everyDays":0})
+   => ""
+140. isFinished({"status":"done","finishedOn":"2026-09-28","lastDone":"2026-09-12"}, "2026-02-22")
+   => true
+141. kindOf("report 2.pdf", "dir")
+   => "dir"
+142. displayName("notes.md")
+   => "notes.md"
+143. parseUrlFile("[InternetShortcut]\nURL=ftp://files")
+   => "ftp://files"
+144. safeUrl("http://a.b/c?d=1")
+   => "http://a.b/c?d=1"
+145. copyName("b copy 2.txt", [], false)
+   => "b copy.txt"
+146. copyPlan([{"name":"Docs","path":"src/Docs","type":"dir"}], "", [])
+   => [{"from":"src/Docs","to":"Docs","name":"Docs"}]
+147. marquee hits({"x":267,"y":186}, {"x":126,"y":283}, [{"key":"k0","rect":{"left":488,"top":51,"right":568,"bottom":141}},{"key":"k1","rect":{"left":452,"top":194,"right":532,"bottom":284}}], ["k0","k0"], "replace")
+   => []
+148. edgeScroll(181, 0, 500)
+   => 0
+149. cleanUp([{"key":"i0","right":false},{"key":"i1","right":true},{"key":"i2","right":false},{"key":"i3","right":false},{"key":"i4","right":false},{"key":"i5","right":false},{"key":"i6","right":false},{"key":"i7","right":false},{"key":"i8","right":false},{"key":"i9","right":false},{"key":"i10","right":false}], {"width":800,"height":760})
+   => {"i0":{"x":12,"y":12},"i1":{"x":692,"y":12},"i2":{"x":12,"y":112},"i3":{"x":12,"y":212},"i4":{"x":12,"y":312},"i5":{"x":12,"y":412},"i6":{"x":12,"y":512},"i7":{"x":12,"y":612},"i8":{"x":108,"y":12},"i9":{"x":108,"y":112},"i10":{"x":108,"y":212}}
+150. placeAll([{"key":"i0","right":false},{"key":"i1","right":false},{"key":"i2","right":false},{"key":"i3","right":false},{"key":"i4","right":true},{"key":"i5","right":true},{"key":"i6","right":false},{"key":"i7","right":true}], {"i0":{"x":1205,"y":169},"i2":{"x":859,"y":89},"i7":{"x":940,"y":630}}, {"width":390,"height":760})
+   => {"i0":{"x":12,"y":12},"i1":{"x":12,"y":112},"i2":{"x":12,"y":212},"i3":{"x":12,"y":312},"i4":{"x":282,"y":12},"i5":{"x":282,"y":112},"i6":{"x":12,"y":412},"i7":{"x":282,"y":212}}
+151. sortEntries([{"name":"run.pl","type":"file","mtimeMs":75},{"name":"notes.md","type":"file","mtimeMs":64},{"name":"notes.md","type":"file","mtimeMs":68},{"name":"notes.md","type":"file","mtimeMs":3}], "date")
+   => ["run.pl","notes.md","notes.md","notes.md"]
+152. rowsFor(980)
+   => 9
+153. readmePrograms("# list\n\nA runs writes a.\n\n```\n?- main.\n```\n\nRun `main.`.")
+   => [{"kind":"prolog","goal":"main","consult":[],"label":"main"}]
+154. isTestPath("src/app.js")
+   => false
+155. testsFailed(2, "ERROR: x")
+   => true
+156. daysBetween("2026-04-26", "2026-06-14")
+   => 49
+157. repeatText({"everyDays":30})
+   => "every 30 days"
+158. isFinished({"status":"doing","everyDays":3,"finishedOn":"2026-06-09","lastDone":"2026-07-18"}, "2026-12-09")
+   => false
+159. kindOf("a.txt", "dir")
+   => "dir"
+160. displayName("a.txt")
+   => "a.txt"
+161. parseUrlFile("[InternetShortcut]\nURL=https://example.com/a")
+   => "https://example.com/a"
+162. safeUrl(" https://x.y ")
+   => "https://x.y/"
+163. copyName("run.pl", ["b copy 2.txt","run.pl","a.txt","b copy 2.txt"], true)
+   => "run.pl copy"
+164. copyPlan([{"name":"report 2.pdf","path":"src/report 2.pdf","type":"file"}], "src", ["image.png","notes.md"])
+   => [{"from":"src/report 2.pdf","to":"src/report 2.pdf","name":"report 2.pdf"}]
+165. marquee hits({"x":576,"y":48}, {"x":9,"y":202}, [{"key":"k0","rect":{"left":329,"top":101,"right":409,"bottom":191}},{"key":"k1","rect":{"left":10,"top":169,"right":90,"bottom":259}},{"key":"k2","rect":{"left":412,"top":253,"right":492,"bottom":343}},{"key":"k3","rect":{"left":240,"top":33,"right":320,"bottom":123}}], [], "replace")
+   => ["k0","k1","k3"]
+166. edgeScroll(260, 0, 500)
+   => 0
+167. cleanUp([{"key":"i0","right":false},{"key":"i1","right":false}], {"width":1280,"height":300})
+   => {"i0":{"x":12,"y":12},"i1":{"x":12,"y":112}}
+168. placeAll([{"key":"i0","right":false},{"key":"i1","right":false},{"key":"i2","right":false},{"key":"i3","right":false},{"key":"i4","right":false},{"key":"i5","right":false},{"key":"i6","right":false}], {"i0":{"x":1112,"y":550},"i5":{"x":146,"y":11}}, {"width":1280,"height":760})
+   => {"i0":{"x":1112,"y":550},"i5":{"x":146,"y":11},"i1":{"x":12,"y":12},"i2":{"x":12,"y":112},"i3":{"x":12,"y":212},"i4":{"x":12,"y":312},"i6":{"x":12,"y":412}}
+169. sortEntries([{"name":"b copy 2.txt","type":"file","mtimeMs":19},{"name":"Docs","type":"dir","mtimeMs":43},{"name":"report 2.pdf","type":"file","mtimeMs":55},{"name":"run.pl","type":"file","mtimeMs":52},{"name":"notes.md","type":"file","mtimeMs":21},{"name":"Docs","type":"dir","mtimeMs":39}], "kind")
+   => ["Docs","Docs","notes.md","report 2.pdf","run.pl","b copy 2.txt"]
+170. rowsFor(1117)
+   => 11
+171. readmePrograms("# algorithm\n\nStudent simple false and data happy green.\n\n```\nnpm test\n```\n\nRun `go`.")
+   => []
+172. isTestPath("tests/t.pl")
+   => true
+173. testsFailed(2, "Warning: ... goal (directive) failed")
+   => true
+174. daysBetween("2026-08-04", "2026-08-08")
+   => 4
+175. repeatText({"everyDays":7})
+   => "weekly"
+176. isFinished({"status":"todo","everyDays":3,"finishedOn":"2026-10-04","lastDone":"2026-10-22"}, "2026-02-07")
+   => true
+177. kindOf("x.lsheet", "file")
+   => "other"
+178. displayName("Google.url")
+   => "Google"
+179. parseUrlFile("URL=http://x.org")
+   => "http://x.org"
+180. safeUrl("mailto:x@y.z")
+   => null
+181. copyName("notes.md", ["Docs","notes.md"], false)
+   => "notes copy.md"
+182. copyPlan([{"name":"Docs","path":"src/Docs","type":"dir"},{"name":"a copy.txt","path":"src/a copy.txt","type":"file"}], "src", ["report 2.pdf","run.pl","image.png"])
+   => [{"from":"src/Docs","to":"src/Docs","name":"Docs"},{"from":"src/a copy.txt","to":"src/a copy.txt","name":"a copy.txt"}]
+183. marquee hits({"x":212,"y":264}, {"x":87,"y":359}, [{"key":"k0","rect":{"left":60,"top":10,"right":140,"bottom":100}}], ["k1","k2"], "add")
+   => ["k1","k2"]
+184. edgeScroll(148, 0, 500)
+   => 0
+185. cleanUp([{"key":"i0","right":false},{"key":"i1","right":false},{"key":"i2","right":false}], {"width":1280,"height":760})
+   => {"i0":{"x":12,"y":12},"i1":{"x":12,"y":112},"i2":{"x":12,"y":212}}
+186. placeAll([{"key":"i0","right":false},{"key":"i1","right":false},{"key":"i2","right":true},{"key":"i3","right":false},{"key":"i4","right":false},{"key":"i5","right":false},{"key":"i6","right":false}], {"i0":{"x":539,"y":275},"i2":{"x":1104,"y":895}}, {"width":1280,"height":568})
+   => {"i0":{"x":539,"y":275},"i1":{"x":12,"y":12},"i2":{"x":1172,"y":12},"i3":{"x":12,"y":112},"i4":{"x":12,"y":212},"i5":{"x":12,"y":312},"i6":{"x":12,"y":412}}
+187. sortEntries([{"name":"a.txt","type":"file","mtimeMs":33},{"name":"a.txt","type":"file","mtimeMs":33},{"name":"run.pl","type":"file","mtimeMs":22}], "name")
+   => ["a.txt","a.txt","run.pl"]
+188. rowsFor(179)
+   => 1
+189. readmePrograms("# logic blue\n\nTree house a about algorithm data runs list a.\n\n```\nnpm test\n```\n\nRun `start(8080).`.")
+   => [{"kind":"prolog","goal":"start(8080)","consult":[],"label":"start(8080)"}]
+190. isTestPath("test/a.test.js")
+   => true
+191. testsFailed(2, "Warning: ... goal (directive) failed")
+   => true
+192. daysBetween("2026-09-18", "2026-11-25")
+   => 68
+193. repeatText({"everyDays":0})
+   => ""
+194. isFinished({"status":"doing","everyDays":3,"finishedOn":"2026-12-23","lastDone":"2026-08-20"}, "2026-08-13")
+   => true
+195. kindOf("b copy 2.txt", "dir")
+   => "dir"
+196. displayName("report 2.pdf")
+   => "report 2.pdf"
+197. parseUrlFile("javascript:alert(1)")
+   => null
+198. safeUrl("javascript:alert(1)")
+   => null
+199. copyName("notes.md", ["b copy 2.txt","run.pl"], false)
+   => "notes copy.md"
+200. copyPlan([{"name":"image.png","path":"src/image.png","type":"file"},{"name":"b copy 2.txt","path":"src/b copy 2.txt","type":"file"},{"name":"a.txt","path":"src/a.txt","type":"file"}], "", ["image.png"])
+   => [{"from":"src/image.png","to":"image copy.png","name":"image copy.png"},{"from":"src/b copy 2.txt","to":"b copy 2.txt","name":"b copy 2.txt"},{"from":"src/a.txt","to":"a.txt","name":"a.txt"}]
