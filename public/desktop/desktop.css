@@ -89,8 +89,27 @@ body.dragging-window iframe { pointer-events: none; }
   .win.active { display: flex; }
   .win .titlebar { cursor: default; }
   .clock, .menu[data-menu='go'] { display: none; }
-  .spotlight input { width: 38vw; }
+  /* everything in the menu bar must fit the phone's width: if anything sticks out, the phone
+     zooms the whole page out and an empty strip shows on the right */
+  .menubar { padding: 3px 4px; gap: 0; }
+  .menu > button { padding: 0 7px; }
+  .spotlight { flex: 1 1 80px; min-width: 64px; }
+  .spotlight input { width: 100%; min-width: 0; }
+  .spotresults { position: fixed; left: 6px; right: 6px; top: 44px; width: auto; }
+  /* notices drop below the menu bar instead of widening it */
+  #notice { position: fixed; top: 46px; left: 8px; right: 8px; max-width: none; margin: 0; padding: 6px 10px; border-radius: 8px; background: var(--panel); border: 1px solid var(--line); box-shadow: 0 4px 14px rgb(0 0 0 / 15%); z-index: 160000; white-space: normal; pointer-events: none; }
+  #notice:empty, .menubar:has(#spot:focus) #notice { display: none; }
 }
+/* the narrowest phones (iPhone SE: 320 px): the brand shrinks to a badge */
+@media (max-width: 400px) {
+  .menubar .brand { font-size: 0; padding: 0 6px; }
+  .menubar .brand::before { content: 'L'; display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 7px; background: var(--accent); color: #fff; font-size: 15px; font-weight: 800; }
+  .menu > button { padding: 0 6px; }
+}
+/* typing in Spotlight: its results come in front of reminders */
+.menubar:focus-within { z-index: 170000; }
+/* a last guard: nothing may make the desktop page wider than the screen */
+html:has(body.desktop-page), body.desktop-page { overflow-x: clip; }
 
 /* prompts (reminders and questions), stacked under the menu bar */
 .prompts { position: fixed; top: 46px; left: 50%; transform: translateX(-50%); z-index: 150000; display: grid; gap: 6px; width: min(760px, 96vw); }
