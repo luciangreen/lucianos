@@ -2,6 +2,8 @@
 import { api } from '/shared/api.js';
 import { $, el } from './dom.js';
 import { COMMON_ZONES, convertTime, evaluate, looksLikeSum } from './calc.js';
+import { appIcon } from './app-icons.js';
+import { showContextMenu } from './context-menu.js';
 import { appInfo, displayName, glyphFor, kindOf, makeUrlFile, parseUrlFile, safeUrl } from './filetypes.js';
 import { IconView, clearSelection, clipboardCount, copyEntries, copySelection, currentSelection, dragCopiesOn, pasteInto, refreshFolder, setDragCopies } from './icons.js';
 import { activeWindow, createWindow, renderTabs, setOnChange, windows } from './wm.js';
@@ -15,7 +17,7 @@ import { initPrograms } from './programs.js';
 const MAC = /Mac|iPhone|iPad/.test(navigator.platform);
 const MOD = MAC ? '⌘' : 'Ctrl+';
 let info;
-let state = { desktopFolder: null, positions: {}, windows: [], recent: [], calc: { input: '', history: [] }, time: {} };
+let state = { desktopFolder: null, positions: {}, sorts: {}, windows: [], recent: [], calc: { input: '', history: [] }, time: {} };
 let desktopView;
 let restoring = false;
 
@@ -39,6 +41,15 @@ function saveState() {
   }, 500);
 }
 setOnChange(saveState);
+
+// How each folder window is sorted (name, kind or date).
+const sorts = {
+  get: (folder) => state.sorts?.[folder] ?? null,
+  set: (folder, by) => {
+    state.sorts = { ...state.sorts, [folder]: by };
+    saveState();
+  }
+};
 
 const positions = {
   get: (folder) => state.positions[folder] ?? {},
@@ -129,6 +140,7 @@ function frameWindow({ kind, title, src, data, geometry, className = '' }) {
   const frame = el('iframe', { src, title });
   frame.setAttribute('allow', 'clipboard-read; clipboard-write; camera; microphone');
   const win = createWindow({ kind, title, body: frame, geometry, className: `framewin ${className}`, data });
+  if (data?.app) win.titleEl.before(appIcon(data.app, 'appicon titleicon'));
   win.frame = frame;
   return win;
 }
@@ -172,7 +184,7 @@ function openFolder(path, geometry = null) {
     el('button', { textContent: 'New folder', onclick: () => newFolder(view.folder) }),
     el('button', { className: 'danger', textContent: 'Delete', title: 'Move the selected items to the trash', onclick: trashSelection }));
   const win = createWindow({ kind: 'folder', title: '', body: iconsBox, toolbar, status: el('div', { className: 'statusline' }, count), geometry, data: { path } });
-  const view = new IconView({ container: iconsBox, folder: path, onOpen: openEntry, onError: showError });
+  const view = new IconView({ container: iconsBox, folder: path, sorts, onOpen: openEntry, onError: showError, onMenu: iconMenu });
   let stopWatch = null;
   let updatePrograms = null;
   programs.attach(win, toolbar).then((u) => { updatePrograms = u; u(path); });
@@ -285,6 +297,59 @@ function renameSelection() {
 function openSelection() {
   const { entries } = currentSelection();
   entries.slice(0, 8).forEach(openEntry);
+}
+
+// ---------------- pop-up menu (right-click, Control-click, touch and hold) ----------------
+// entry: the icon pressed (it is selected), or null for the empty space of a view.
+function iconMenu(view, entry, x, y) {
+  const folder = view.folder;
+  const sorted = view.free ? null : sorts.get(folder) ?? null;
+  const tick = (by) => (sorted === by ? '✓ ' : '');
+  const arrange = [
+    { label: view.free ? 'Clean up' : 'Clean up (sort by name)', action: () => view.cleanUp() },
+    { label: `${tick('name')}Sort by name`, action: () => view.sort('name') },
+    { label: `${tick('kind')}Sort by kind`, action: () => view.sort('kind') },
+    { label: `${tick('date')}Sort by date changed`, action: () => view.sort('date') }
+  ];
+  if (!entry) {
+    showContextMenu(x, y, [
+      { label: 'New folder', action: () => newFolder(folder) },
+      { label: 'New text file', action: () => newTextFile(folder) },
+      { label: 'New URL icon', action: () => newUrlIcon(folder) },
+      null,
+      { label: 'Paste', key: `${MOD}V`, disabled: !clipboardCount(), action: async () => { const made = await pasteInto(folder, showError); if (made.length) notice(`Pasted ${made.join(', ')}`, 'ok'); } },
+      { label: 'Select all', key: `${MOD}A`, action: () => view.selectAll() },
+      null,
+      ...arrange,
+      ...(view.free ? [null, { label: 'Choose the desktop folder…', action: chooseDesktopFolder }] : [])
+    ]);
+    return;
+  }
+  const { entries } = currentSelection();
+  const files = entries.filter((e) => e.type !== 'app');
+  const many = entries.length > 1;
+  if (entry.type === 'app') {
+    showContextMenu(x, y, [
+      { label: `Open ${appInfo(entry.app).name}`, icon: appIcon(entry.app), action: () => openApp(entry.app) },
+      null,
+      ...arrange.slice(0, 1)
+    ]);
+    return;
+  }
+  showContextMenu(x, y, [
+    { label: many ? `Open ${Math.min(entries.length, 8)} items` : 'Open', key: `${MOD}O`, action: openSelection },
+    ...(!many && entry.type === 'file' ? [{ label: 'Open in iEdit', action: () => openApp('iedit', { open: entry.path }) }] : []),
+    null,
+    { label: 'Rename', key: 'Enter', disabled: many, action: renameSelection },
+    { label: 'Copy', key: `${MOD}C`, disabled: !files.length, action: copyFiles },
+    { label: 'Duplicate', key: `${MOD}D`, disabled: !files.length, action: duplicateFiles },
+    ...(entry.type === 'dir' && clipboardCount() ? [{ label: `Paste into "${entry.name}"`, action: async () => { const made = await pasteInto(entry.path, showError); if (made.length) notice(`Pasted ${made.join(', ')} into ${entry.name}`, 'ok'); } }] : []),
+    null,
+    ...(!many && entry.type === 'file' ? [{ label: 'Ask the character about it', action: () => commentOn(entry.path) }] : []),
+    { label: many ? `Move ${files.length} items to the trash` : 'Move to trash', key: '⌫', action: trashSelection },
+    null,
+    ...arrange.slice(0, 1)
+  ]);
 }
 
 // ---------------- Claude settings ----------------
@@ -424,7 +489,7 @@ async function spotlight(contents = false) {
     items.push({ glyph: '=', label: r.text, sub: 'Answer · Enter copies it', action: async () => { await navigator.clipboard.writeText(r.text).catch(() => {}); notice(`Copied ${r.text}`, 'ok'); } });
   }
   for (const id of info.apps) {
-    if (appInfo(id).name.toLowerCase().includes(q.toLowerCase())) items.push({ glyph: appInfo(id).glyph, label: appInfo(id).name, sub: 'App', action: () => openApp(id) });
+    if (appInfo(id).name.toLowerCase().includes(q.toLowerCase())) items.push({ glyph: appInfo(id).glyph, icon: id, label: appInfo(id).name, sub: 'App', action: () => openApp(id) });
   }
   for (const [label, fn] of [['Calculator', calculatorWindow], ['Time converter', timeWindow]]) {
     if (label.toLowerCase().includes(q.toLowerCase())) items.push({ glyph: '🧮', label, sub: 'Tool', action: () => fn() });
@@ -457,7 +522,7 @@ function renderSpot(message) {
   const box = $('spotResults');
   spotIndex = Math.min(spotIndex, Math.max(0, spotItems.length - 1));
   box.replaceChildren(...spotItems.map((it, i) => {
-    const li = el('li', { className: i === spotIndex ? 'current' : '' }, el('span', { className: 'glyph', textContent: it.glyph }),
+    const li = el('li', { className: i === spotIndex ? 'current' : '' }, it.icon ? appIcon(it.icon, 'glyph appicon') : el('span', { className: 'glyph', textContent: it.glyph }),
       el('span', { className: 'text' }, el('span', { textContent: it.label }), el('span', { className: 'quiet small', textContent: it.sub })));
     li.addEventListener('click', () => { closeSpot(); it.action(); });
     return li;
@@ -490,7 +555,7 @@ document.addEventListener('pointerdown', (e) => {
 function buildMenu(name, items) {
   const box = document.querySelector(`.menu[data-menu="${name}"] .items`);
   box.replaceChildren(...items.map((it) => it === null ? el('hr') :
-    el('button', { onclick: () => { closeMenus(); it.action(); } }, el('span', { textContent: it.label }), el('span', { className: 'key', textContent: it.key ?? '' }))));
+    el('button', { onclick: () => { closeMenus(); it.action(); } }, el('span', { className: it.icon ? 'withicon' : '' }, ...(it.icon ? [appIcon(it.icon)] : []), it.label), el('span', { className: 'key', textContent: it.key ?? '' }))));
 }
 function closeMenus() {
   document.querySelectorAll('.menu.open').forEach((m) => m.classList.remove('open'));
@@ -575,11 +640,16 @@ function buildMenus() {
     null,
     { label: 'Select all', key: `${MOD}A`, action: () => { const w = activeWindow(); (w?.kind === 'folder' ? w.view : desktopView).selectAll(); } },
     null,
+    { label: 'Clean up icons', action: () => frontView().cleanUp() },
+    { label: 'Sort by name', action: () => frontView().sort('name') },
+    { label: 'Sort by kind', action: () => frontView().sort('kind') },
+    { label: 'Sort by date changed', action: () => frontView().sort('date') },
+    null,
     { label: `${dragCopiesOn() ? '✓ ' : ''}Dragging copies`, key: '⌥ drag', action: () => { setDragCopies(!dragCopiesOn()); state.dragCopies = dragCopiesOn(); saveState(); buildMenus(); notice(dragCopiesOn() ? 'Dragging now copies. Turn it off in the Edit menu.' : 'Dragging moves again (hold ⌥ Option to copy).'); } },
     { label: 'Tip: drop files on an iEdit window to put them in', action: () => {} }
   ]);
   buildGoMenu();
-  buildMenu('apps', info.apps.length ? info.apps.map((id) => ({ label: `${appInfo(id).glyph}  ${appInfo(id).name}`, action: () => openApp(id) }))
+  buildMenu('apps', info.apps.length ? info.apps.map((id) => ({ icon: id, label: appInfo(id).name, action: () => openApp(id) }))
     : [{ label: 'No apps installed yet (clone them into lucianos/apps)', action: () => {} }]);
   buildMenu('tools', [
     { label: '✅  Checklist', action: () => wf.checklistWindow() },
@@ -638,6 +708,12 @@ async function toggleCharacter() {
 }
 
 // The folder the character is "in": the active folder window, else the desktop folder.
+// The icons in front: the front folder window's, or the desktop's.
+function frontView() {
+  const w = activeWindow();
+  return w?.kind === 'folder' && w.view ? w.view : desktopView;
+}
+
 function hereFolder() {
   const w = activeWindow();
   return w?.kind === 'folder' ? w.data.path : state.desktopFolder ?? '';
@@ -842,7 +918,8 @@ async function init() {
     positions,
     extra: () => info.apps.map((id, i) => ({ type: 'app', app: id, key: `app:${id}`, name: id, posKey: `app:${id}`, right: true, rightIndex: i })),
     onOpen: openEntry,
-    onError: showError
+    onError: showError,
+    onMenu: iconMenu
   });
   await desktopView.load();
   let t;

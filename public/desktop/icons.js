@@ -2,16 +2,22 @@
 // Click selects (Shift/⌘ adds), double-click opens, drag moves icons or drops them into a folder.
 // Press on an empty space and drag to draw a rectangle that selects every icon it touches
 // (Shift adds to the selection, ⌘/Ctrl flips; on a touch screen, touch and hold first).
+// Right-click or Control-click (touch and hold on a phone) opens a menu of commands; Clean up
+// lines the icons up to fit the desktop or window.
 // Hold ⌥ Option (Alt) while dropping to copy instead. Drop files on an iEdit window to put
 // their contents into it.
 import { api } from '/shared/api.js';
 import { copyPlan } from './copy-lib.js';
 import { clampRect, combine, edgeScroll, hitsOf, modeOf, rectFrom } from './marquee-lib.js';
 import { el } from './dom.js';
+import { CELL_H, CELL_W, cleanUp, placeAll, sortEntries } from './layout-lib.js';
+
+// On a Mac, Control-click means the menu, not "add to the selection".
+const MAC = /Mac|iPhone|iPad/.test(navigator.platform);
+const menuClick = (e) => MAC && e.ctrlKey && !e.metaKey;
+import { appIcon } from './app-icons.js';
 import { appInfo, displayName, glyphFor, kindOf } from './filetypes.js';
 
-const CELL_W = 96;
-const CELL_H = 92;
 const views = new Set();
 let selection = { view: null, keys: new Set() };
 
@@ -128,11 +134,18 @@ function dragOverIedit(x, y) {
 
 export class IconView {
   // free: icons placed anywhere (desktop). positions: { get(folder) -> {name: {x,y}}, save(folder, map) }
-  constructor({ container, folder, free = false, positions = null, extra = () => [], onOpen, onError }) {
+  constructor({ container, folder, free = false, positions = null, sorts = null, extra = () => [], onOpen, onError, onMenu = null }) {
     this.container = container;
     this.folder = folder;
     this.free = free;
     this.positions = positions;
+    this.sorts = sorts;
+    this.onMenu = onMenu;
+    container.addEventListener('contextmenu', (e) => {
+      if (e.target.tagName === 'INPUT') return;
+      e.preventDefault();
+      this.menuAt(e.target.closest('.icon'), e.clientX, e.clientY);
+    });
     this.extra = extra;
     this.onOpen = onOpen;
     this.onError = onError ?? console.error;
@@ -155,30 +168,22 @@ export class IconView {
     } catch (err) {
       this.onError(`${this.folder || 'Home'}: ${err.message}`);
     }
-    this.entries = [...this.extra(), ...files.map((f) => ({ ...f, key: f.path }))];
+    const sortBy = this.sorts?.get(this.folder);
+    const all = [...this.extra(), ...files.map((f) => ({ ...f, key: f.path }))];
+    this.entries = sortBy && !this.free ? sortEntries(all, sortBy) : all;
     this.render();
   }
 
   render() {
     const keep = selection.view === this ? selection.keys : new Set();
     const saved = this.free ? this.positions.get(this.folder) : {};
-    const rows = Math.max(1, Math.floor((this.container.clientHeight - 16) / CELL_H));
-    const taken = new Set(Object.values(saved).map((p) => `${Math.round(p.x / CELL_W)},${Math.round(p.y / CELL_H)}`));
-    let slot = 0;
-    const nextSlot = () => {
-      for (;;) {
-        const col = Math.floor(slot / rows);
-        const row = slot % rows;
-        slot++;
-        if (!taken.has(`${col},${row}`)) return { x: 12 + col * CELL_W, y: 12 + row * CELL_H };
-      }
-    };
+    const box = { width: this.container.clientWidth, height: this.container.clientHeight };
+    const spots = this.free ? placeAll(this.entries.map((e) => ({ key: e.key, posKey: e.posKey ?? e.name, right: !!e.right })), saved, box) : {};
     const nodes = this.entries.map((entry) => {
       const node = this.iconNode(entry);
       if (keep.has(entry.key)) node.classList.add('selected');
       if (this.free) {
-        const p = saved[entry.posKey ?? entry.name] ?? (entry.right ? null : nextSlot());
-        const pos = p ?? { x: Math.max(12, this.container.clientWidth - CELL_W - 12), y: 12 + (entry.rightIndex ?? 0) * CELL_H };
+        const pos = spots[entry.key];
         node.style.left = `${pos.x}px`;
         node.style.top = `${pos.y}px`;
       }
@@ -197,7 +202,7 @@ export class IconView {
       tabIndex: 0,
       'data-key': entry.key,
       'data-kind': isApp ? 'app' : kindOf(entry)
-    }, el('span', { className: 'glyph', textContent: isApp ? appInfo(entry.app).glyph : glyphFor(entry) }), label);
+    }, isApp ? appIcon(entry.app, 'glyph appicon') : el('span', { className: 'glyph', textContent: glyphFor(entry) }), label);
     node.addEventListener('dblclick', () => this.onOpen(entry));
     node.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) this.onOpen(entry);
@@ -210,15 +215,22 @@ export class IconView {
     node.addEventListener('pointerdown', (e) => {
       if (e.button !== 0 || e.target.tagName === 'INPUT') return;
       e.stopPropagation();
+      if (menuClick(e)) return; // the contextmenu event follows
       const wasSelected = selection.view === this && selection.keys.has(entry.key);
       if (!wasSelected || e.shiftKey || e.metaKey || e.ctrlKey) select(this, entry.key, e.shiftKey || e.metaKey || e.ctrlKey);
-      // touch: tapping an icon that was already selected opens it
-      if (e.pointerType === 'touch' && wasSelected && selection.keys.size === 1) {
-        this.onOpen(entry);
-        return;
-      }
+      const touch = e.pointerType === 'touch';
+      // touch: tapping an icon that was already selected opens it (when the finger lifts, so
+      // touch and hold can still bring up the menu)
+      const openOnUp = touch && wasSelected && selection.keys.size === 1;
       const start = { x: e.clientX, y: e.clientY };
       let moving = null;
+      let menued = false;
+      const hold = touch ? setTimeout(() => {
+        if (moving) return;
+        menued = true;
+        node.removeEventListener('pointermove', move);
+        this.menuAt(node, start.x, start.y);
+      }, 550) : null;
       let ghost = null;
       let badge = null;
       node.setPointerCapture(e.pointerId);
@@ -227,6 +239,7 @@ export class IconView {
         const dy = ev.clientY - start.y;
         if (!moving) {
           if (Math.hypot(dx, dy) < 6) return;
+          clearTimeout(hold);
           moving = [...this.container.querySelectorAll('.icon.selected')];
           // the dragged icons float above every window, as copies; the originals fade
           ghost = el('div', { className: 'drag-ghost' });
@@ -260,7 +273,11 @@ export class IconView {
         node.removeEventListener('pointermove', move);
         node.removeEventListener('pointerup', up);
         node.removeEventListener('pointercancel', up);
-        if (!moving) return;
+        clearTimeout(hold);
+        if (!moving) {
+          if (openOnUp && !menued && ev.type === 'pointerup') this.onOpen(entry);
+          return;
+        }
         document.body.classList.remove('dragging-icons', 'copying', 'into-iedit');
         dragOverIedit(-1, -1);
         ghost.remove();
@@ -403,11 +420,53 @@ export class IconView {
     input.addEventListener('pointerdown', (e) => e.stopPropagation());
   }
 
+  // The pop-up menu for an icon (selecting it first, unless it is part of the selection) or,
+  // with no icon, for the empty space.
+  menuAt(node, x, y) {
+    if (!this.onMenu) return;
+    if (node && !(selection.view === this && selection.keys.has(node.dataset.key))) select(this, node.dataset.key, false);
+    if (!node && selection.view === this) clearSelection();
+    const entry = node ? this.entries.find((e) => e.key === node.dataset.key) : null;
+    this.onMenu(this, entry, x, y);
+  }
+
+  // Line the icons up in a grid that fits. On the desktop, files fill columns from the left and
+  // apps from the right, in the order given (sortBy) or in the order they are seen now (reading
+  // down each column, left to right); the new places are remembered. In a folder window the
+  // grid always fits, so this sorts it.
+  cleanUp(sortBy = null) {
+    if (!this.free) return this.sort(sortBy ?? this.sorts?.get(this.folder) ?? 'name');
+    const box = { width: this.container.clientWidth, height: this.container.clientHeight };
+    let order;
+    if (sortBy) order = sortEntries(this.entries, sortBy);
+    else {
+      const at = new Map([...this.container.querySelectorAll('.icon')].map((n) => [n.dataset.key, { x: n.offsetLeft, y: n.offsetTop }]));
+      const here = (e) => at.get(e.key) ?? { x: 0, y: 0 };
+      const col = (e) => Math.round(here(e).x / CELL_W);
+      // files read from the left, apps from the right (so they keep their own column order)
+      const group = (e) => (e.right ? 1 : 0);
+      order = [...this.entries].sort((a, b) => group(a) - group(b) || (a.right ? col(b) - col(a) : col(a) - col(b)) || here(a).y - here(b).y);
+    }
+    const spots = cleanUp(order.map((e) => ({ key: e.key, right: !!e.right })), box);
+    const map = {};
+    for (const e of order) map[e.posKey ?? e.name] = spots[e.key];
+    this.positions.save(this.folder, map);
+    this.render();
+  }
+
+  // Sort a folder window's icons (remembered for that folder), or clean up the desktop in that order.
+  sort(by) {
+    if (this.free) return this.cleanUp(by);
+    this.sorts?.set(this.folder, by);
+    this.entries = sortEntries(this.entries, by);
+    this.render();
+  }
+
   // Press on an empty space and drag: a rectangle selects the icons it touches. It is drawn
   // over everything (fixed), kept inside the window, and the window scrolls when the pointer
   // goes near or past its top or bottom edge. A press without a drag clears the selection.
   marquee(e) {
-    if (e.button !== 0 || e.target.closest('.icon') || e.target.tagName === 'INPUT') return;
+    if (e.button !== 0 || menuClick(e) || e.target.closest('.icon') || e.target.tagName === 'INPUT') return;
     if (e.target !== this.container && !e.target.classList?.contains('emptyfolder')) return;
     const mode = modeOf(e);
     const base = selection.view === this ? new Set(selection.keys) : new Set();
@@ -423,6 +482,7 @@ export class IconView {
     let box = null;
     let holdTimer = null;
     let scrollTimer = null;
+    let grew = false; // the finger moved after the rectangle began
     const update = () => {
       const o = offset();
       const now = at(last);
@@ -464,6 +524,7 @@ export class IconView {
         if (far < 4) return;
         begin();
       }
+      if (far > 8) grew = true;
       update();
       autoScroll();
     };
@@ -480,6 +541,8 @@ export class IconView {
     const up = () => {
       const drew = !!box;
       finish();
+      // touch and hold without dragging: the menu for the empty space
+      if (touch && drew && !grew) return this.menuAt(null, startClient.x, startClient.y);
       if (!drew && mode === 'replace') clearSelection();
     };
     if (touch) holdTimer = setTimeout(() => begin(), 450);
