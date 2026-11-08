@@ -11,7 +11,16 @@ export const APP_INFO = {
   touchscreenterminal: { name: 'Touchscreen terminal', glyph: '👆' },
   simplug: { name: 'simplug', glyph: '💬' },
   fastos: { name: 'fastos', glyph: '⚡' },
-  dancestudio: { name: 'DanceStudio', glyph: '💃' }
+  dancestudio: { name: 'DanceStudio', glyph: '💃' },
+  lucianoffice: { name: 'Lucian Office', glyph: '🏢' },
+  writer: { name: 'Writer', glyph: '📝' },
+  counter: { name: 'Counter', glyph: '🧮' },
+  presenter: { name: 'Presenter', glyph: '📽️' },
+  etcher: { name: 'Etcher', glyph: '✒️' },
+  tabler: { name: 'Tabler', glyph: '🗃️' },
+  studio: { name: 'Studio', glyph: '🎚️' },
+  moviemr: { name: 'Movie MR', glyph: '🎬' },
+  visualstarlog: { name: 'Visual Starlog', glyph: '✨' }
 };
 
 export function appInfo(id) {
