@@ -39,6 +39,8 @@ body.desktop-page input, body.desktop-page textarea, .calcresult, .zones .mono {
 .icon.selected .label { background: var(--accent); color: #fff; }
 .icon:focus-visible { box-shadow: 0 0 0 2px var(--accent); }
 .icon.dragging { opacity: 0.35; pointer-events: none; }
+.marquee { position: fixed; z-index: 9000; pointer-events: none; border: 1px solid var(--accent); background: color-mix(in srgb, var(--accent) 16%, transparent); border-radius: 2px; }
+body.marqueeing, body.marqueeing * { cursor: default !important; }
 .icon[data-kind='app'] .label { font-weight: 600; }
 .icon .renamer { width: 100%; font-size: 12.5px; min-height: 24px; padding: 0 4px; text-align: center; }
 body.dragging-icons .iconsbox, body.dragging-icons .desktop-icons { cursor: copy; }

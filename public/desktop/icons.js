@@ -1,9 +1,12 @@
 // Icon views: the desktop (icons placed freely, positions remembered) and folder windows (a grid).
 // Click selects (Shift/⌘ adds), double-click opens, drag moves icons or drops them into a folder.
+// Press on an empty space and drag to draw a rectangle that selects every icon it touches
+// (Shift adds to the selection, ⌘/Ctrl flips; on a touch screen, touch and hold first).
 // Hold ⌥ Option (Alt) while dropping to copy instead. Drop files on an iEdit window to put
 // their contents into it.
 import { api } from '/shared/api.js';
 import { copyPlan } from './copy-lib.js';
+import { clampRect, combine, edgeScroll, hitsOf, modeOf, rectFrom } from './marquee-lib.js';
 import { el } from './dom.js';
 import { appInfo, displayName, glyphFor, kindOf } from './filetypes.js';
 
@@ -21,6 +24,26 @@ export function currentSelection() {
 export function clearSelection() {
   if (selection.view) for (const n of selection.view.container.querySelectorAll('.icon.selected')) n.classList.remove('selected');
   selection = { view: null, keys: new Set() };
+}
+
+// Select exactly these keys in a view.
+function setSelection(view, keys) {
+  if (selection.view && selection.view !== view) clearSelection();
+  selection = { view, keys: new Set(keys) };
+  for (const n of view.container.querySelectorAll('.icon')) n.classList.toggle('selected', selection.keys.has(n.dataset.key));
+}
+
+// While a rectangle is drawn with a finger, the page must not scroll.
+let marqueeTouch = false;
+addEventListener('touchmove', (e) => { if (marqueeTouch) e.preventDefault(); }, { passive: false });
+
+// The window body that scrolls a view's icons (folder windows), or null (the desktop).
+function scrollerOf(node) {
+  for (let n = node; n && n !== document.body; n = n.parentElement) {
+    const y = getComputedStyle(n).overflowY;
+    if (y === 'auto' || y === 'scroll') return n;
+  }
+  return null;
 }
 
 function select(view, key, add) {
@@ -116,9 +139,7 @@ export class IconView {
     this.entries = [];
     container.classList.add(free ? 'icons-free' : 'icons-grid');
     container.dataset.folder = folder;
-    container.addEventListener('pointerdown', (e) => {
-      if (e.target === container) clearSelection();
-    });
+    container.addEventListener('pointerdown', (e) => this.marquee(e));
     views.add(this);
   }
 
@@ -380,6 +401,92 @@ export class IconView {
     });
     input.addEventListener('blur', () => finish(true));
     input.addEventListener('pointerdown', (e) => e.stopPropagation());
+  }
+
+  // Press on an empty space and drag: a rectangle selects the icons it touches. It is drawn
+  // over everything (fixed), kept inside the window, and the window scrolls when the pointer
+  // goes near or past its top or bottom edge. A press without a drag clears the selection.
+  marquee(e) {
+    if (e.button !== 0 || e.target.closest('.icon') || e.target.tagName === 'INPUT') return;
+    if (e.target !== this.container && !e.target.classList?.contains('emptyfolder')) return;
+    const mode = modeOf(e);
+    const base = selection.view === this ? new Set(selection.keys) : new Set();
+    const touch = e.pointerType === 'touch';
+    const scroller = scrollerOf(this.container);
+    const offset = () => ({ x: scroller?.scrollLeft ?? 0, y: scroller?.scrollTop ?? 0 });
+    // points are kept in the scrolled content's terms, so the rectangle stays anchored where
+    // it began while the window scrolls
+    const at = (ev) => { const o = offset(); return { x: ev.clientX + o.x, y: ev.clientY + o.y }; };
+    const start = at(e);
+    const startClient = { x: e.clientX, y: e.clientY };
+    let last = e;
+    let box = null;
+    let holdTimer = null;
+    let scrollTimer = null;
+    const update = () => {
+      const o = offset();
+      const now = at(last);
+      const r = rectFrom(start, now);
+      const client = { left: r.left - o.x, top: r.top - o.y, right: r.right - o.x, bottom: r.bottom - o.y };
+      const shown = clampRect(client, (scroller ?? this.container).getBoundingClientRect());
+      Object.assign(box.style, { left: `${shown.left}px`, top: `${shown.top}px`, width: `${Math.max(0, shown.right - shown.left)}px`, height: `${Math.max(0, shown.bottom - shown.top)}px` });
+      const icons = [...this.container.querySelectorAll('.icon')].map((n) => ({ key: n.dataset.key, rect: n.getBoundingClientRect() }));
+      setSelection(this, combine(base, hitsOf(client, icons), mode));
+    };
+    const begin = () => {
+      box = el('div', { className: 'marquee' });
+      document.body.append(box);
+      document.body.classList.add('marqueeing');
+      if (touch) marqueeTouch = true;
+      if (mode === 'replace') setSelection(this, []);
+      update();
+    };
+    // keep scrolling while the pointer rests near an edge
+    const autoScroll = () => {
+      clearInterval(scrollTimer);
+      if (!scroller || !box) return;
+      const b = scroller.getBoundingClientRect();
+      if (!edgeScroll(last.clientY, b.top, b.bottom)) return;
+      scrollTimer = setInterval(() => {
+        const step = edgeScroll(last.clientY, b.top, b.bottom);
+        const before = scroller.scrollTop;
+        scroller.scrollTop += step;
+        if (!step || scroller.scrollTop === before) { clearInterval(scrollTimer); return; }
+        update();
+      }, 16);
+    };
+    const move = (ev) => {
+      last = ev;
+      const far = Math.hypot(ev.clientX - startClient.x, ev.clientY - startClient.y);
+      if (!box) {
+        // a finger that moves before the hold is scrolling, not selecting
+        if (touch) { if (far > 8) finish(); return; }
+        if (far < 4) return;
+        begin();
+      }
+      update();
+      autoScroll();
+    };
+    const finish = () => {
+      clearTimeout(holdTimer);
+      clearInterval(scrollTimer);
+      this.container.removeEventListener('pointermove', move);
+      this.container.removeEventListener('pointerup', up);
+      this.container.removeEventListener('pointercancel', finish);
+      marqueeTouch = false;
+      document.body.classList.remove('marqueeing');
+      box?.remove();
+    };
+    const up = () => {
+      const drew = !!box;
+      finish();
+      if (!drew && mode === 'replace') clearSelection();
+    };
+    if (touch) holdTimer = setTimeout(() => begin(), 450);
+    try { this.container.setPointerCapture(e.pointerId); } catch { /* the pointer may already be gone */ }
+    this.container.addEventListener('pointermove', move);
+    this.container.addEventListener('pointerup', up);
+    this.container.addEventListener('pointercancel', finish);
   }
 
   selectAll() {
