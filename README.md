@@ -22,7 +22,8 @@ LucianOS is a web desktop that runs on your Mac. You can reach it from the Mac, 
     - The text goes in as whole lines, at the line you drop on.
     - Several files go in one after another.
     - It's one step that ⌘Z undoes, and the files themselves stay where they are.
-  - Shift or ⌘ selects several icons. **Enter** renames the selected icon in place. **Delete** (or the Delete button) moves it to the trash after asking.
+  - Shift or ⌘ selects several icons. To select a group, press on an empty space and drag a rectangle over them, on the desktop or in a folder window; every icon it touches is selected. Hold Shift to add to the selection, or ⌘/Ctrl to flip icons in and out of it. In a folder window, drag past the top or bottom edge to scroll. On a touchscreen, touch and hold an empty space for half a second, then drag.
+  - **Enter** renames the selected icon in place. **Delete** (or the Delete button) moves it to the trash after asking.
 - **What opens what:**
 
   | You open | What happens |
@@ -202,7 +203,7 @@ api.jobs.stream(job.id, { output: ({ text }) => console.log(text), end: (s) => c
 npm test
 ```
 
-There are 84 tests. They cover the Claude bridge (with a stand-in API: confirmation, monthly limit, temporary keys, the key never sent to the browser), predicted commands, recently changed files, GitHub statistics (with a stand-in GitHub), finding programs in READMEs and making test files, many live streams sharing one connection, the workflow checklist (daily and repeating items, app groups, child uses, reminder times, the Grammar Logic goal), MIDI reading and key finding, file copies, the character's command grammar (spoken maths, fuzzy names), the calculator, durations and time zones, plus sandbox escapes, symlinks, save conflicts, trash, search, the command allowlist, shell-injection attempts, interrupt, input, temporary folders, the job queue, output streaming, the Prolog command line, state, events, the local-mode guards, password login and its rate limit.
+There are 88 tests. They cover the Claude bridge (with a stand-in API: confirmation, monthly limit, temporary keys, the key never sent to the browser), predicted commands, recently changed files, GitHub statistics (with a stand-in GitHub), finding programs in READMEs and making test files, many live streams sharing one connection, the workflow checklist (daily and repeating items, app groups, child uses, reminder times, the Grammar Logic goal), MIDI reading and key finding, file copies, rectangle selection (hits, Shift/⌘ modes, edge scrolling), the character's command grammar (spoken maths, fuzzy names), the calculator, durations and time zones, plus sandbox escapes, symlinks, save conflicts, trash, search, the command allowlist, shell-injection attempts, interrupt, input, temporary folders, the job queue, output streaming, the Prolog command line, state, events, the local-mode guards, password login and its rate limit.
 
 ## Adding the apps
 
