@@ -102,6 +102,8 @@ export function createApp(cfg) {
       }
       if (err instanceof HttpError) return sendJson(res, err.status, { error: err.message });
       if (err.code === 'EACCES' || err.code === 'EPERM') return sendJson(res, 403, { error: 'Permission denied by the operating system' });
+      // something was moved or deleted while we worked on it (in the Finder, say)
+      if (err.code === 'ENOENT') return sendJson(res, 404, { error: 'Not found: it was moved, renamed or deleted while LucianOS was using it' });
       console.error(err);
       sendJson(res, 500, { error: 'Server error: ' + err.message });
     }

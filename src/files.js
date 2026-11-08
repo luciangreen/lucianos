@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 import { HttpError, openSse, readBody, readJson, sendJson } from './http-util.js';
+import { findById, idOf } from './locate.js';
 
 const MAX_READ = 10 * 1024 * 1024;
 const SKIP_DIRS = new Set(['.git', 'node_modules', '.Trash', 'Library']);
@@ -21,8 +22,33 @@ function entryInfo(sandbox, abs, stat) {
     type: stat.isDirectory() ? 'dir' : 'file',
     size: stat.size,
     mtimeMs: Math.floor(stat.mtimeMs),
-    birthtimeMs: Math.floor(stat.birthtimeMs)
+    birthtimeMs: Math.floor(stat.birthtimeMs),
+    id: idOf(stat) // send it back on reads and saves to find the entry after a rename
   };
+}
+
+// The path asked for, or, when nothing is there any more and the client sent the entry's id
+// (from its last read or save), where that entry is now. movedFrom is set when it moved.
+async function followed(sandbox, abs, id) {
+  try {
+    return { abs, stat: await fsp.stat(abs), movedFrom: null };
+  } catch (err) {
+    if (err.code !== 'ENOENT') throw err;
+  }
+  const found = id ? await findById(sandbox.root, abs, id) : null;
+  if (found) return { abs: found, stat: await fsp.stat(found), movedFrom: sandbox.relative(abs) };
+  return { abs, stat: null, movedFrom: null };
+}
+
+// A clear message for a path whose folder is gone.
+async function folderGone(sandbox, abs) {
+  let dir = path.dirname(abs);
+  try {
+    if ((await fsp.stat(dir)).isDirectory()) return null;
+  } catch (err) {
+    if (err.code !== 'ENOENT') throw err;
+  }
+  return new HttpError(404, `The folder "${sandbox.relative(dir) || 'Home'}" is not there any more (moved, renamed or deleted), so ${path.basename(abs)} could not be saved there. Save it somewhere else.`);
 }
 
 async function statOr404(abs) {
@@ -84,13 +110,14 @@ export function fileRoutes(router, { sandbox, bus, cfg }) {
     sendJson(res, 200, { path: sandbox.relative(abs), entries });
   });
 
+  // ?id= (from the last read or save) finds the file if it was renamed or moved since.
   router.get('/api/files/read', async (req, res, { query }) => {
-    const abs = sandbox.resolve(query.get('path'));
-    const stat = await statOr404(abs);
+    const { abs, stat, movedFrom } = await followed(sandbox, sandbox.resolve(query.get('path')), query.get('id'));
+    if (!stat) throw new HttpError(404, 'Not found');
     if (stat.isDirectory()) throw new HttpError(400, 'That is a folder');
     if (stat.size > MAX_READ) throw new HttpError(413, 'File is larger than 10 MB; use /api/files/raw');
     const content = await fsp.readFile(abs, 'utf8');
-    sendJson(res, 200, { ...entryInfo(sandbox, abs, stat), content });
+    sendJson(res, 200, { ...entryInfo(sandbox, abs, stat), content, ...(movedFrom ? { movedFrom } : {}) });
   });
 
   router.get('/api/files/raw', async (req, res, { query }) => {
@@ -109,16 +136,16 @@ export function fileRoutes(router, { sandbox, bus, cfg }) {
   });
 
   // PUT body = file text. Header X-Base-Mtime (from your last read) makes the save
-  // fail with 409 if someone changed the file since, unless ?force=1.
+  // fail with 409 if someone changed the file since, unless ?force=1. Header X-File-Id (the
+  // id from your last read or save) saves to wherever the file was renamed or moved to;
+  // the reply's path is then the new one, with movedFrom the old.
   router.put('/api/files/write', async (req, res, { query }) => {
-    const abs = sandbox.resolve(query.get('path'));
     const content = await readBody(req);
     const base = req.headers['x-base-mtime'];
-    let existing = null;
-    try {
-      existing = await fsp.stat(abs);
-    } catch (err) {
-      if (err.code !== 'ENOENT') throw err;
+    const { abs, stat: existing, movedFrom } = await followed(sandbox, sandbox.resolve(query.get('path')), req.headers['x-file-id']);
+    if (!existing && query.get('mkdirs') !== '1') {
+      const gone = await folderGone(sandbox, abs);
+      if (gone) throw gone;
     }
     if (existing?.isDirectory()) throw new HttpError(400, 'That is a folder');
     if (base && existing && query.get('force') !== '1' && Math.floor(existing.mtimeMs) !== Number(base)) {
@@ -131,7 +158,7 @@ export function fileRoutes(router, { sandbox, bus, cfg }) {
     const stat = await fsp.stat(abs);
     const info = entryInfo(sandbox, abs, stat);
     bus.publish('file.saved', { path: info.path });
-    sendJson(res, 200, info);
+    sendJson(res, 200, movedFrom ? { ...info, movedFrom } : info);
   });
 
   router.post('/api/files/mkdir', async (req, res) => {
@@ -280,19 +307,43 @@ export function fileRoutes(router, { sandbox, bus, cfg }) {
     sendJson(res, 200, { results, truncated: results.length >= limit });
   });
 
-  // Live changes under a folder, as server-sent events.
+  // Live changes under a folder, as server-sent events: change { kind, path }, and gone
+  // { path, movedTo } when the folder itself is renamed or moved (movedTo is where it went)
+  // or deleted or put in the Finder's trash (movedTo null). The stream ends after gone.
   router.get('/api/files/watch', async (req, res, { query }) => {
     const abs = sandbox.resolve(query.get('path') ?? '');
     const stat = await statOr404(abs);
     if (!stat.isDirectory()) throw new HttpError(400, 'Not a folder');
     const send = openSse(req, res);
+    const id = idOf(stat);
+    let ended = false;
+    // fs.watch does not reliably say when the watched folder itself goes, so look every so often
+    const check = setInterval(async () => {
+      try {
+        await fsp.stat(abs);
+        return;
+      } catch (err) {
+        if (err.code !== 'ENOENT' || ended) return;
+      }
+      ended = true;
+      clearInterval(check);
+      const found = abs === sandbox.root ? null : await findById(sandbox.root, abs, id);
+      watcher?.close();
+      send('gone', { path: sandbox.relative(abs), movedTo: found ? sandbox.relative(found) : null });
+      res.end();
+    }, 1500);
+    req.on('close', () => { ended = true; clearInterval(check); });
     let watcher;
     try {
       watcher = fs.watch(abs, { recursive: query.get('recursive') === '1' }, (kind, name) => {
         if (!name) return;
-        send('change', { kind, path: sandbox.relative(path.join(abs, name.toString())) });
+        if (!ended) send('change', { kind, path: sandbox.relative(path.join(abs, name.toString())) });
       });
+      // a watched folder that is deleted can make the watcher fail; the check above reports it
+      watcher.on('error', () => {});
     } catch (err) {
+      ended = true;
+      clearInterval(check);
       send('error', { message: err.message });
       res.end();
       return;

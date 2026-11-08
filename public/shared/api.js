@@ -141,12 +141,16 @@ export const api = {
 
   files: {
     list: (path = '', hidden = false) => call('GET', `/api/files/list?${q({ path, hidden: hidden ? 1 : undefined })}`),
-    read: (path) => call('GET', `/api/files/read?${q({ path })}`),
+    // id: the id from your last read or save, to find the file if it was renamed or moved
+    // since (in the Finder, say); the reply's path is then the new one, with movedFrom.
+    read: (path, { id } = {}) => call('GET', `/api/files/read?${q({ path, id })}`),
     rawUrl: (path) => `/api/files/raw?${q({ path })}`,
     // baseMtime: the mtimeMs from your last read; the save fails with status 409 if the file changed since.
-    write: (path, content, { baseMtime, force, mkdirs } = {}) =>
+    // id: the id from your last read or save; if the file was renamed or moved since, it is saved
+    // there, and the reply's path is the new one (with movedFrom). Keep the reply's id for next time.
+    write: (path, content, { baseMtime, force, mkdirs, id } = {}) =>
       call('PUT', `/api/files/write?${q({ path, force: force ? 1 : undefined, mkdirs: mkdirs ? 1 : undefined })}`, content,
-        baseMtime ? { 'X-Base-Mtime': String(baseMtime) } : {}),
+        { ...(baseMtime ? { 'X-Base-Mtime': String(baseMtime) } : {}), ...(id ? { 'X-File-Id': id } : {}) }),
     mkdir: (path) => call('POST', '/api/files/mkdir', { path }),
     move: (from, to) => call('POST', '/api/files/move', { from, to }),
     copy: (from, to) => call('POST', '/api/files/copy', { from, to }),
@@ -154,9 +158,15 @@ export const api = {
     recent: (path = '', { days, limit } = {}) => call('GET', `/api/files/recent?${q({ path, days, limit })}`),
     search: (q2, opts = {}) =>
       call('GET', `/api/files/search?${q({ q: q2, path: opts.path, contents: opts.contents ? 1 : undefined, regex: opts.regex ? 1 : undefined, case: opts.caseSensitive ? 1 : undefined })}`),
-    watch: (path, onChange, recursive = false) => {
+    // onGone({ path, movedTo }): the folder itself was renamed or moved (movedTo is where it
+    // is now) or deleted (movedTo null). Watching stops then; watch the new place to go on.
+    watch: (path, onChange, recursive = false, onGone = null) => {
       const es = liveStream(`/api/files/watch?${q({ path, recursive: recursive ? 1 : undefined })}`, { resume: true });
       es.addEventListener('change', (e) => onChange(JSON.parse(e.data)));
+      es.addEventListener('gone', (e) => {
+        es.close();
+        onGone?.(JSON.parse(e.data));
+      });
       return () => es.close();
     }
   },

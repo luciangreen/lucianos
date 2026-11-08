@@ -27,6 +27,7 @@ LucianOS is a web desktop that runs on your Mac. You can reach it from the Mac, 
   - **Clean up** (in that menu or the Edit menu) lines the icons up in a grid that fits the desktop or window: files fill columns from the left, apps from the right, wrapping into more columns when the screen is short. **Sort by name / kind / date changed** does the same in that order; a folder window remembers its sort. Icons whose remembered place is off screen (after turning the phone, or a smaller window) are shown in free places without forgetting where they were.
   - App icons are drawn tiles (`public/desktop/app-icons.js`), the same on every device; an app without a drawing gets a coloured tile with its first letter.
   - **Enter** renames the selected icon in place. **Delete** (or the Delete button) moves it to the trash after asking.
+  - **Renamed or deleted outside LucianOS** (in the Finder, a terminal, Dropbox): a folder window follows its folder to its new name or place, and closes with a note if the folder was deleted or put in the Finder's trash. The desktop folder is followed the same way (it falls back to Home if it is gone). Apps that send a file's `id` (iEdit does) keep saving to the file after it is renamed or moved.
 - **What opens what:**
 
   | You open | What happens |
@@ -200,13 +201,15 @@ const job = await api.jobs.prolog({ goal: 'texttobr(u,"file.txt",u,u)', consult:
 api.jobs.stream(job.id, { output: ({ text }) => console.log(text), end: (s) => console.log(s.status) });
 ```
 
+Every file entry has an `id` (its identity on disk). Send the one from your last read or save, and a file renamed or moved since (outside LucianOS) is found again: `api.files.write(path, text, { baseMtime, id })` saves to where it is now, and `api.files.read(path, { id })` reads it; the reply's `path` is then the new one, with `movedFrom` the old. Keep the reply's `id`, because each save gives the file a new one. `api.files.watch(folder, onChange, false, onGone)` calls `onGone({ path, movedTo })` when the folder itself is renamed (`movedTo` is the new path) or deleted (`movedTo` is null). Saving into a folder that is gone answers 404 with a plain message.
+
 ## Tests
 
 ```sh
 npm test
 ```
 
-There are 92 tests. They cover the Claude bridge (with a stand-in API: confirmation, monthly limit, temporary keys, the key never sent to the browser), predicted commands, recently changed files, GitHub statistics (with a stand-in GitHub), finding programs in READMEs and making test files, many live streams sharing one connection, the workflow checklist (daily and repeating items, app groups, child uses, reminder times, the Grammar Logic goal), MIDI reading and key finding, file copies, rectangle selection (hits, Shift/⌘ modes, edge scrolling), icon layout (clean up, fitting, sort orders), the character's command grammar (spoken maths, fuzzy names), the calculator, durations and time zones, plus sandbox escapes, symlinks, save conflicts, trash, search, the command allowlist, shell-injection attempts, interrupt, input, temporary folders, the job queue, output streaming, the Prolog command line, state, events, the local-mode guards, password login and its rate limit.
+There are 96 tests. They cover the Claude bridge (with a stand-in API: confirmation, monthly limit, temporary keys, the key never sent to the browser), predicted commands, recently changed files, GitHub statistics (with a stand-in GitHub), finding programs in READMEs and making test files, many live streams sharing one connection, the workflow checklist (daily and repeating items, app groups, child uses, reminder times, the Grammar Logic goal), MIDI reading and key finding, file copies, rectangle selection (hits, Shift/⌘ modes, edge scrolling), icon layout (clean up, fitting, sort orders), following files and folders renamed or deleted outside LucianOS, the character's command grammar (spoken maths, fuzzy names), the calculator, durations and time zones, plus sandbox escapes, symlinks, save conflicts, trash, search, the command allowlist, shell-injection attempts, interrupt, input, temporary folders, the job queue, output streaming, the Prolog command line, state, events, the local-mode guards, password login and its rate limit.
 
 ## Adding the apps
 
