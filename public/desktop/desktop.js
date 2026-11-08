@@ -647,7 +647,25 @@ async function namesHere() {
   return (await api.files.list(hereFolder())).entries;
 }
 
-async function handleCommand(cmd) {
+// Apps that registered commands (Lucian Office apps) get first go at what is said while
+// their window is in front: { type: 'lucianos.command', id, text } -> { type: 'lucianos.reply', id, text | null }.
+const appReplies = new Map();
+function askApp(text) {
+  const w = activeWindow();
+  if (!text || w?.kind !== 'app' || !w.commands || !w.frame?.contentWindow) return Promise.resolve(null);
+  const id = `${Date.now()}${Math.random()}`;
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => { appReplies.delete(id); resolve(null); }, 4000);
+    appReplies.set(id, (reply) => { clearTimeout(timer); appReplies.delete(id); resolve(reply); });
+    w.frame.contentWindow.postMessage({ type: 'lucianos.command', id, text }, location.origin);
+  });
+}
+
+async function handleCommand(cmd, text) {
+  if (cmd.intent !== 'help') {
+    const fromApp = await askApp(text);
+    if (typeof fromApp === 'string') return fromApp;
+  }
   const here = hereFolder();
   const fromWorkflows = await wf.handleCommand(cmd);
   if (fromWorkflows !== undefined) return fromWorkflows;
@@ -742,7 +760,7 @@ async function handleCommand(cmd) {
 async function doSentence(text) {
   const cmd = parseCommand(String(text).slice(0, 300));
   try {
-    const reply = await handleCommand(cmd);
+    const reply = await handleCommand(cmd, String(text));
     if (reply) character ? character.say(reply) : notice(reply);
     else if (reply === null) notice(`I don't know how to do "${text}".`);
   } catch (err) {
@@ -762,6 +780,15 @@ async function startCharacter() {
 addEventListener('message', (e) => {
   if (e.origin === location.origin && e.data?.type === 'lucianos.do' && typeof e.data.text === 'string') {
     doSentence(e.data.text);
+    return;
+  }
+  if (e.origin === location.origin && e.data?.type === 'lucianos.commands') {
+    const w = windows().find((x) => x.frame?.contentWindow === e.source);
+    if (w) w.commands = Array.isArray(e.data.names) ? e.data.names.slice(0, 200) : [];
+    return;
+  }
+  if (e.origin === location.origin && e.data?.type === 'lucianos.reply' && appReplies.has(e.data.id)) {
+    appReplies.get(e.data.id)(typeof e.data.text === 'string' ? e.data.text.slice(0, 600) : null);
     return;
   }
   if (e.origin === location.origin && e.data?.type === 'lucianos.say' && typeof e.data.text === 'string') {
