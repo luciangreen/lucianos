@@ -198,7 +198,19 @@ function openFolder(path, geometry = null) {
     stopWatch = api.files.watch(path, () => {
       clearTimeout(t);
       t = setTimeout(() => view.load().then(() => (count.textContent = `${view.entries.length} items`)), 300);
-    });
+    }, false, gone);
+  };
+  // the folder was renamed or moved outside LucianOS (Finder, terminal): follow it; deleted or
+  // put in the Finder's trash: close the window
+  const gone = ({ movedTo }) => {
+    const name = path.split('/').pop() || 'Home';
+    if (movedTo !== null) {
+      notice(`"${name}" is now ${movedTo}`, 'ok');
+      go(movedTo);
+    } else {
+      notice(`"${name}" was deleted or put in the trash, so its window closed`);
+      win.close();
+    }
   };
   const go = (p) => {
     path = p;
@@ -221,6 +233,25 @@ function openFolder(path, geometry = null) {
   rememberFolder(path);
   show();
   return win;
+}
+
+// The desktop shows a folder (Desktop); if it is renamed outside LucianOS, follow it, keeping
+// the icons' places; if it is deleted, show Home.
+function watchDesktop() {
+  let t;
+  api.files.watch(state.desktopFolder, () => {
+    clearTimeout(t);
+    t = setTimeout(() => desktopView.load(), 300);
+  }, false, ({ path, movedTo }) => {
+    const to = movedTo ?? '';
+    if (state.positions[path] && !state.positions[to]) state.positions[to] = state.positions[path];
+    state.desktopFolder = to;
+    desktopView.folder = to;
+    saveState();
+    notice(movedTo !== null ? `The desktop folder is now ${movedTo}` : `The desktop folder "${path}" is gone, so the desktop shows Home`);
+    desktopView.load();
+    watchDesktop();
+  });
 }
 
 // Where "New folder" etc. go: the active folder window, else the desktop folder.
@@ -906,6 +937,11 @@ async function init() {
     const home = await api.files.list('');
     state.desktopFolder = home.entries.some((e) => e.type === 'dir' && e.name === 'Desktop') ? 'Desktop' : '';
   }
+  // the desktop folder was deleted or renamed while LucianOS was closed
+  if (state.desktopFolder && !(await api.files.list(state.desktopFolder).then(() => true, () => false))) {
+    notice(`The desktop folder "${state.desktopFolder}" is not there any more, so the desktop shows Home. Choose another by right-clicking the desktop, or in the Go menu.`);
+    state.desktopFolder = '';
+  }
   setDragCopies(state.dragCopies);
   buildMenus();
   tick();
@@ -922,11 +958,7 @@ async function init() {
     onMenu: iconMenu
   });
   await desktopView.load();
-  let t;
-  api.files.watch(state.desktopFolder, () => {
-    clearTimeout(t);
-    t = setTimeout(() => desktopView.load(), 300);
-  });
+  watchDesktop();
   addEventListener('resize', () => desktopView.render());
 
   await wf.load();
@@ -935,7 +967,7 @@ async function init() {
   restoring = true;
   for (const w of saved?.windows ?? []) {
     try {
-      if (w.kind === 'folder') openFolder(w.path, w.geometry);
+      if (w.kind === 'folder') await api.files.list(w.path).then(() => openFolder(w.path, w.geometry), () => {}); // skip folders that are gone
       else if (w.kind === 'app') openApp(w.app, {}, w.geometry);
       else if (w.kind === 'calc') calculatorWindow(w.geometry);
       else if (w.kind === 'time') timeWindow(w.geometry);
