@@ -69,6 +69,10 @@ LucianOS is a web desktop that runs on your Mac. You can reach it from the Mac, 
   - **Today's music**
   - a note
 
+  Items can repeat **daily** or every so many days (an app can make weekly or monthly ones); a repeating item comes back on the list when it is due, and the morning question counts it.
+
+  Apps can keep their own group of items in the checklist (Lucian Office's business coach does): an app in a window posts `{type: 'lucianos.checklist', group: {key, title, kind, target}, items: [{key, title, kind, target, daily, everyDays, comment}]}`, and LucianOS adds or updates the group's items by key, keeping your ticks, and hides items the app no longer sends. `finish: key` ticks one as done.
+
   **Run today's** runs every daily item. Scripts run side by side, and scripts that pause for you open in shellrun. The list can be shrunk to its title bar.
 - **Grammar Logic** (Tools ▸ Grammar Logic…, or say "grammar logic on meditation"):
   - It asks for a topic and runs Grammar Logic with the calls from `br_16k_args_algs` in `find_char_map.pl` (private repo). It copies the topic's first word and adds 79 words, so the file has 80 words, one per line. In Algorithm-Writer-with-Lists:
@@ -198,7 +202,7 @@ api.jobs.stream(job.id, { output: ({ text }) => console.log(text), end: (s) => c
 npm test
 ```
 
-There are 82 tests. They cover the Claude bridge (with a stand-in API: confirmation, monthly limit, temporary keys, the key never sent to the browser), predicted commands, recently changed files, GitHub statistics (with a stand-in GitHub), finding programs in READMEs and making test files, many live streams sharing one connection, the workflow checklist (daily items, child uses, reminder times, the Grammar Logic goal), MIDI reading and key finding, file copies, the character's command grammar (spoken maths, fuzzy names), the calculator, durations and time zones, plus sandbox escapes, symlinks, save conflicts, trash, search, the command allowlist, shell-injection attempts, interrupt, input, temporary folders, the job queue, output streaming, the Prolog command line, state, events, the local-mode guards, password login and its rate limit.
+There are 84 tests. They cover the Claude bridge (with a stand-in API: confirmation, monthly limit, temporary keys, the key never sent to the browser), predicted commands, recently changed files, GitHub statistics (with a stand-in GitHub), finding programs in READMEs and making test files, many live streams sharing one connection, the workflow checklist (daily and repeating items, app groups, child uses, reminder times, the Grammar Logic goal), MIDI reading and key finding, file copies, the character's command grammar (spoken maths, fuzzy names), the calculator, durations and time zones, plus sandbox escapes, symlinks, save conflicts, trash, search, the command allowlist, shell-injection attempts, interrupt, input, temporary folders, the job queue, output streaming, the Prolog command line, state, events, the local-mode guards, password login and its rate limit.
 
 ## Adding the apps
 

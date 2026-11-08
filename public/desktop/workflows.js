@@ -6,7 +6,7 @@ import { GM_NAMES } from '/shared/gm.js';
 import { bestMatch } from '/shared/character/commands.js';
 import { el } from './dom.js';
 import {
-  DEFAULT_SETTINGS, KINDS, STATUSES, dailyToRun, dueReminder, glGoal, breasonGoal, isFinished, isRecent, needsPerson,
+  DEFAULT_SETTINGS, KINDS, STATUSES, dailyToRun, finishKey, repeatText, upsertGroup, dueReminder, glGoal, breasonGoal, isFinished, isRecent, needsPerson,
   newItem, ordered, parseTimes, slug, stamp, timeKey, today
 } from './workflows-lib.js';
 
@@ -300,7 +300,7 @@ export function initWorkflows(ctx) {
     if (!checklist) return;
     const day = today();
     const rows = ordered(st.items, st.showHidden).map(({ item, depth }) => {
-      const done = el('input', { type: 'checkbox', checked: isFinished(item, day), title: item.daily ? 'Done today' : 'Finished' });
+      const done = el('input', { type: 'checkbox', checked: isFinished(item, day), title: item.daily ? 'Done today' : item.everyDays > 0 ? `Done (${repeatText(item)})` : 'Finished' });
       done.addEventListener('change', () => set(item, { finishedOn: done.checked ? day : null }));
       const title = el('input', { type: 'text', className: 'wtitle', value: item.title, 'aria-label': 'Workflow name' });
       title.addEventListener('change', () => set(item, { title: title.value.trim() || item.title }));
@@ -323,6 +323,7 @@ export function initWorkflows(ctx) {
           el('button', { textContent: '✕', title: 'Delete', onclick: () => remove(item) })),
         el('div', { className: 'wline sub' }, comment,
           el('label', { className: 'quiet small' }, daily, ' daily'),
+          item.everyDays > 0 && !item.daily ? el('span', { className: 'quiet small', textContent: repeatText(item) }) : null,
           el('span', { className: 'quiet small', textContent: `made ${new Date(item.created).toLocaleDateString()} · changed ${new Date(item.modified).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })}` })));
       row.style.marginLeft = `${depth * 22}px`;
       return row;
@@ -585,6 +586,14 @@ export function initWorkflows(ctx) {
       if (item) return runItem(item);
     },
     handleCommand,
+    // an app keeps its own group of checklist items up to date (lucianos.checklist)
+    async appChecklist({ group, items, finish }) {
+      await load();
+      if (Array.isArray(items)) st.items = upsertGroup(st.items, group, items);
+      if (finish) st.items = finishKey(st.items, group?.key, finish);
+      save();
+      renderChecklist();
+    },
     start() {
       morningQuestion();
       setInterval(() => checkReminders(), 30000);

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { BR, GL_AS, LOADER, breasonGoal, dailyToRun, dueReminder, firstWord, glGoal, loadGoal, isFinished, isRecent, needsPerson, newItem, ordered, parseTimes, prologString, slug, stamp, today } from '../public/desktop/workflows-lib.js';
+import { daysBetween, finishKey, repeatText, upsertGroup, BR, GL_AS, LOADER, breasonGoal, dailyToRun, dueReminder, firstWord, glGoal, loadGoal, isFinished, isRecent, needsPerson, newItem, ordered, parseTimes, prologString, slug, stamp, today } from '../public/desktop/workflows-lib.js';
 
 test('daily items finish for the day only', () => {
   const d = newItem({ title: 'GL', daily: true, finishedOn: '2026-11-07' });
@@ -66,4 +66,38 @@ test('names, dates and scripts', () => {
   assert.ok(!needsPerson({ steps: [{ type: 'cmd' }] }));
   assert.ok(isRecent(Date.now() - 3600e3));
   assert.ok(!isRecent(Date.now() - 2 * 86400e3));
+});
+
+test('items can repeat every N days, and still count as to do once due', () => {
+  const weekly = newItem({ title: 'Review', everyDays: 7, finishedOn: '2026-11-01' });
+  assert.equal(daysBetween('2026-11-01', '2026-11-08'), 7);
+  assert.ok(isFinished(weekly, '2026-11-07'));
+  assert.ok(!isFinished(weekly, '2026-11-08'));
+  assert.deepEqual(dailyToRun([weekly], '2026-11-07'), []);
+  assert.equal(dailyToRun([weekly], '2026-11-08').length, 1);
+  assert.equal(dailyToRun([newItem({ everyDays: 30 })], '2026-11-08').length, 1);
+  assert.equal(repeatText(weekly), 'weekly');
+  assert.equal(repeatText({ everyDays: 30 }), 'every 30 days');
+});
+
+test('an app keeps its own group of checklist items', () => {
+  const mine = newItem({ title: 'Grammar Logic', kind: 'gl', daily: true });
+  const group = { key: 'coach', title: 'Business coach', kind: 'url', target: '/apps/lucianoffice/?coach=1' };
+  let items = upsertGroup([mine], group, [
+    { key: 'research', title: 'Research the market', kind: 'url', target: '/apps/lucianoffice/?coach=research', everyDays: 7 },
+    { key: 'budget', title: 'Set the ad budget', kind: 'url', target: '/apps/lucianoffice/?coach=budget' },
+    { key: 'bad', kind: 'rm -rf' }
+  ], 10);
+  const parent = items.find((i) => i.key === 'coach');
+  assert.equal(items.length, 4);
+  assert.deepEqual(items.filter((i) => i.parent === parent.id).map((i) => [i.key, i.everyDays, i.daily]), [['research', 7, false], ['budget', 0, false]]);
+  items = finishKey(items, 'coach', 'research', '2026-11-08');
+  assert.equal(items.find((i) => i.key === 'research').finishedOn, '2026-11-08');
+  // sent again: the tick stays, the title changes, and a dropped item is hidden
+  items = upsertGroup(items, group, [{ key: 'research', title: 'Research the market (weekly)', kind: 'url', target: '/apps/lucianoffice/?coach=research', everyDays: 7 }], 20);
+  const r = items.find((i) => i.key === 'research');
+  assert.deepEqual([r.title, r.finishedOn, r.hidden], ['Research the market (weekly)', '2026-11-08', false]);
+  assert.equal(items.find((i) => i.key === 'budget').hidden, true);
+  assert.equal(items.filter((i) => i.key === 'coach').length, 1);
+  assert.equal(items[0], items.find((i) => i.title === 'Grammar Logic') && items[0]);
 });

@@ -37,6 +37,7 @@ export function newItem(fields, now = Date.now()) {
     kind: 'note',
     target: '',
     daily: false,
+    everyDays: 0,
     finishedOn: null,
     status: 'unknown',
     comment: '',
@@ -48,14 +49,52 @@ export function newItem(fields, now = Date.now()) {
   };
 }
 
-// Daily items count as finished only on the day they were ticked.
+// Days from one YYYY-MM-DD to another.
+export const daysBetween = (from, to) => Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86400000);
+
+// Daily items count as finished only on the day they were ticked; items that repeat every
+// N days (everyDays, e.g. 7 for weekly) until N days have passed; others once ticked.
 export function isFinished(item, day = today()) {
   if (!item.finishedOn) return false;
-  return item.daily ? item.finishedOn === day : true;
+  if (item.daily) return item.finishedOn === day;
+  if (item.everyDays > 0) return daysBetween(item.finishedOn, day) < item.everyDays;
+  return true;
 }
 
+// Repeating items (daily or every N days) still to do today.
 export function dailyToRun(items, day = today()) {
-  return items.filter((i) => i.daily && !i.hidden && !isFinished(i, day));
+  return items.filter((i) => (i.daily || i.everyDays > 0) && !i.hidden && !isFinished(i, day));
+}
+
+export const repeatText = (item) => (item.daily ? 'daily' : item.everyDays === 7 ? 'weekly' : item.everyDays > 0 ? `every ${item.everyDays} days` : '');
+
+// An app's own group of checklist items (lucianos.checklist): a parent item with group.key,
+// and children matched by their key. Children are updated (title, kind, target, repeat,
+// comment) but keep what you did with them (ticks, status, comments you wrote are replaced
+// only if the app sends one); children the app no longer sends are hidden, not deleted.
+const APP_FIELDS = ['title', 'kind', 'target', 'daily', 'everyDays', 'comment'];
+export function upsertGroup(items, group, entries, now = Date.now()) {
+  if (!group?.key || !Array.isArray(entries)) return items;
+  const out = items.map((i) => ({ ...i }));
+  const clean = (e) => Object.fromEntries(APP_FIELDS.filter((k) => e[k] !== undefined).map((k) => [k, k === 'everyDays' ? Math.max(0, Math.floor(Number(e[k]) || 0)) : k === 'daily' ? !!e[k] : String(e[k]).slice(0, 300)]));
+  let parent = out.find((i) => i.key === group.key && !i.parent);
+  if (!parent) { parent = newItem({ key: group.key, kind: 'note', ...clean(group) }, now); out.push(parent); } else Object.assign(parent, clean(group), { hidden: false, modified: now });
+  const keys = new Set();
+  for (const e of entries) {
+    if (!e?.key || !KINDS[e.kind ?? 'note']) continue;
+    keys.add(e.key);
+    const child = out.find((i) => i.parent === parent.id && i.key === e.key);
+    if (child) Object.assign(child, clean(e), { hidden: !!e.hidden, modified: now });
+    else out.push(newItem({ key: e.key, parent: parent.id, ...clean(e), hidden: !!e.hidden }, now));
+  }
+  for (const i of out) if (i.parent === parent.id && i.key && !keys.has(i.key) && !i.hidden) Object.assign(i, { hidden: true, modified: now });
+  return out;
+}
+
+// Tick an app's item (by group and key) as done today.
+export function finishKey(items, groupKey, key, day = today()) {
+  const parent = items.find((i) => i.key === groupKey && !i.parent);
+  return items.map((i) => (parent && i.parent === parent.id && i.key === key ? { ...i, finishedOn: day, modified: Date.now() } : i));
 }
 
 // Items in tree order (children under their parent), each with a depth.

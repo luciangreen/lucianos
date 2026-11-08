@@ -799,6 +799,10 @@ addEventListener('message', (e) => {
     wf.runById(e.data.id);
     return;
   }
+  if (e.origin === location.origin && e.data?.type === 'lucianos.checklist' && typeof e.data.group?.key === 'string') {
+    wf.appChecklist({ group: e.data.group, items: Array.isArray(e.data.items) ? e.data.items.slice(0, 100) : undefined, finish: typeof e.data.finish === 'string' ? e.data.finish : undefined });
+    return;
+  }
   if (e.origin === location.origin && e.data?.type === 'lucianos.gl' && typeof e.data.topic === 'string') {
     wf.runGL(e.data.topic || null);
     return;
