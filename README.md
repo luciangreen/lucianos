@@ -48,6 +48,7 @@ LucianOS is a web desktop that runs on your Mac. You can reach it from the Mac, 
 - **The character** (bottom right; **Tools ▸ Show or hide the character**) is a talking photo, ported from [retromr](https://github.com/luciangreen/retromr). It uses [newos](https://github.com/luciangreen/newos)'s voice with lip-sync.
   - **Talking to it:** tap 🎤 and speak, or type.
   - **Setting it up:** ⚙ chooses your photo, name, voice and speed. Until you choose a photo, it shows a drawn face. Every app in the suite shares the same character.
+  - **Eyes and mouth:** if they're in the wrong places on your photo, choose ⚙ ▸ **Adjust eyes and mouth** (or say "adjust my face"). Drag the circles onto the eyes and the middle of the mouth, then press **Done**; **Find again** looks for the face afresh, and **Cancel** keeps the old places. It opens by itself when the face had to be guessed. On a keyboard, the arrow keys nudge the selected circle (Shift for bigger steps).
   - **What it understands:**
     - "open iEdit", "open notes"
     - "go to Projects", "go up", "go home", "what's here"
@@ -209,7 +210,7 @@ Every file entry has an `id` (its identity on disk). Send the one from your last
 npm test
 ```
 
-There are 96 tests. They cover the Claude bridge (with a stand-in API: confirmation, monthly limit, temporary keys, the key never sent to the browser), predicted commands, recently changed files, GitHub statistics (with a stand-in GitHub), finding programs in READMEs and making test files, many live streams sharing one connection, the workflow checklist (daily and repeating items, app groups, child uses, reminder times, the Grammar Logic goal), MIDI reading and key finding, file copies, rectangle selection (hits, Shift/⌘ modes, edge scrolling), icon layout (clean up, fitting, sort orders), following files and folders renamed or deleted outside LucianOS, the character's command grammar (spoken maths, fuzzy names), the calculator, durations and time zones, plus sandbox escapes, symlinks, save conflicts, trash, search, the command allowlist, shell-injection attempts, interrupt, input, temporary folders, the job queue, output streaming, the Prolog command line, state, events, the local-mode guards, password login and its rate limit.
+There are 98 tests. They cover the Claude bridge (with a stand-in API: confirmation, monthly limit, temporary keys, the key never sent to the browser), predicted commands, recently changed files, GitHub statistics (with a stand-in GitHub), finding programs in READMEs and making test files, many live streams sharing one connection, the workflow checklist (daily and repeating items, app groups, child uses, reminder times, the Grammar Logic goal), MIDI reading and key finding, file copies, rectangle selection (hits, Shift/⌘ modes, edge scrolling), icon layout (clean up, fitting, sort orders), following files and folders renamed or deleted outside LucianOS, the character's command grammar (spoken maths, fuzzy names), the calculator, durations and time zones, plus sandbox escapes, symlinks, save conflicts, trash, search, the command allowlist, shell-injection attempts, interrupt, input, temporary folders, the job queue, output streaming, the Prolog command line, state, events, the local-mode guards, password login and its rate limit.
 
 ## Adding the apps
 

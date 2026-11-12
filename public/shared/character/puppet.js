@@ -3,6 +3,8 @@
 //
 //   const p = new Puppet(canvas);
 //   await p.setPhoto(dataUrl, landmarks?)   // finds the face if no landmarks
+//   p.startAdjust(); p.toScreen([x, y]); p.toImage([x, y]); p.setLandmarks(L); p.endAdjust()
+//     // holding the face still so the eyes and mouth can be placed by hand
 //   p.mouth = 0..1                           // set while speaking (lip-sync from tts.js)
 //   p.hearing = true                         // a little lean while listening
 
@@ -131,6 +133,8 @@ export class Puppet {
     this.blinkStart = -1;
     this.skin = ['#c99a7f', '#c99a7f'];
     this.running = true;
+    this.adjusting = false;
+    this.fit = null; // { ox, oy, s }: canvas pixels = (ox + x * s, oy + y * s) when still
     const loop = (t) => {
       if (!this.running) return;
       this.frame(t);
@@ -145,12 +149,38 @@ export class Puppet {
 
   async setPhoto(src, landmarks = null) {
     this.img = await loadImage(src);
-    this.landmarks = landmarks ?? (await findFace(this.img));
+    this.setLandmarks(landmarks ?? (await findFace(this.img)));
+    return this.landmarks;
+  }
+
+  // New places for the eyes and mouth on the same photo.
+  setLandmarks(landmarks) {
+    this.landmarks = landmarks;
     this.model = faceModel(this.landmarks);
     this.buildJaw();
     const ry = this.model.eyeRY;
     this.skin = this.model.eyes.map((e) => this.sampleColour(e[0] + this.model.down[0] * ry * 2.6, e[1] + this.model.down[1] * ry * 2.6, Math.max(2, ry * 0.6)));
     return this.landmarks;
+  }
+
+  // Adjusting: the face holds still and keeps its framing (so it does not jump while the
+  // markers are dragged); the photo's points map to the canvas with toScreen and back with toImage.
+  startAdjust() {
+    this.adjusting = true;
+    this.mouth = 0;
+    this.frozen = null;
+  }
+  endAdjust() {
+    this.adjusting = false;
+    this.frozen = null;
+  }
+  toScreen([x, y]) {
+    const f = this.frozen ?? this.fit;
+    return f ? [f.ox + x * f.s, f.oy + y * f.s] : [0, 0];
+  }
+  toImage([x, y]) {
+    const f = this.frozen ?? this.fit;
+    return f ? [(x - f.ox) / f.s, (y - f.oy) / f.s] : [0, 0];
   }
 
   sampleColour(x, y, r) {
@@ -206,14 +236,21 @@ export class Puppet {
     const cover = Math.max(W / IW, H / IH);
     let s = (H * 0.62) / (m.eyeDist * 2.6);
     s = Math.max(cover * 0.7, Math.min(s, cover * 3));
-    const ox = W / 2 - fx * s, oy = H * 0.48 - fy * s;
+    let ox = W / 2 - fx * s, oy = H * 0.48 - fy * s;
+    if (this.adjusting) {
+      this.frozen ??= { ox, oy, s, W, H };
+      if (this.frozen.W !== W || this.frozen.H !== H) this.frozen = { ox, oy, s, W, H };
+      ({ ox, oy, s } = this.frozen);
+    }
+    this.fit = { ox, oy, s };
+    const still = this.adjusting;
 
     const t = now / 1000;
     this.talkAmp += ((this.speaking ? 1 : 0) - this.talkAmp) * 0.05;
     const open = Math.max(0, Math.min(1, this.mouth));
-    const sway = 0.012 * Math.sin(t * 0.6) + 0.007 * Math.sin(t * 1.37) + this.talkAmp * 0.012 * Math.sin(t * 6.3) + (this.hearing ? 0.03 : 0);
-    const bob = 1.5 * Math.sin(t * 0.9) + this.talkAmp * open * m.maxOpen * 0.12;
-    const breathe = 1 + 0.004 * Math.sin(t * 1.7);
+    const sway = still ? 0 : 0.012 * Math.sin(t * 0.6) + 0.007 * Math.sin(t * 1.37) + this.talkAmp * 0.012 * Math.sin(t * 6.3) + (this.hearing ? 0.03 : 0);
+    const bob = still ? 0 : 1.5 * Math.sin(t * 0.9) + this.talkAmp * open * m.maxOpen * 0.12;
+    const breathe = still ? 1 : 1 + 0.004 * Math.sin(t * 1.7);
     const [px, py] = m.pivot;
     ctx.translate(ox + px * s, oy + py * s + bob);
     ctx.rotate(sway);
@@ -242,6 +279,7 @@ export class Puppet {
       ctx.drawImage(this.jaw.canvas, this.jaw.x0 + dx * d, this.jaw.y0 + dy * d);
     }
 
+    if (still) return;
     if (now > this.blinkAt) {
       this.blinkStart = now;
       this.blinkAt = now + 2200 + Math.random() * 4200;

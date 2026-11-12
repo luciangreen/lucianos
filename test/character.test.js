@@ -68,3 +68,10 @@ test('names match despite speech recognition quirks', () => {
   assert.equal(bestMatch('nothing like it', names), null);
   assert.equal(tidyName('My Notes Dot TXT file'), 'notes.txt');
 });
+
+test('adjusting the eyes and mouth', () => {
+  for (const t of ['adjust my face', 'Fix the eyes and mouth.', 'please move your mouth', 'change the eyes', 'adjust eyes and mouth positions'])
+    assert.deepEqual(parseCommand(t), { intent: 'adjust' }, t);
+  assert.notEqual(parseCommand('move notes.txt to Docs').intent, 'adjust');
+  assert.notEqual(parseCommand('open my face photo.png').intent, 'adjust');
+});
