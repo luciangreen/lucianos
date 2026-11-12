@@ -50,15 +50,26 @@ export async function mountCharacter({ handle = async () => null, help = HELP_TE
   const nameIn = el('input', { type: 'text', value: cfg.name, 'aria-label': 'Name' });
   const voiceSel = el('select', { 'aria-label': 'Voice' });
   const rateIn = el('input', { type: 'range', min: '0.6', max: '1.6', step: '0.1', value: String(cfg.rate), 'aria-label': 'Speed' });
+  const adjustBtn = el('button', { type: 'button', textContent: 'Adjust eyes and mouth', title: 'Drag circles onto the eyes and mouth in your photo', onclick: () => startAdjust() });
   const settings = el('div', { className: 'lc-settings hidden' },
     el('button', { type: 'button', textContent: 'Choose photo…', onclick: () => file.click() }),
+    adjustBtn,
     el('button', { type: 'button', textContent: 'Use the drawn face', onclick: () => usePlaceholder(true) }),
     el('label', {}, 'Name ', nameIn),
     el('label', {}, 'Voice ', voiceSel),
     el('label', {}, 'Speed ', rateIn),
     el('p', { className: 'lc-note', textContent: 'Your photo stays in the suite (state folder). It is never sent anywhere else.' }));
   const chips = el('div', { className: 'lc-chips', 'aria-label': 'Suggested commands' });
-  const body = el('div', { className: 'lc-body' }, canvas, heard, said, chips, form, settings, file);
+  // adjusting: three markers over the face (left eye, right eye, mouth) and a bar of buttons
+  const marks = ['eyeL', 'eyeR', 'mouth'].map((key) => el('div', { className: `lc-mark ${key === 'mouth' ? 'mouth' : 'eye'} hidden`, role: 'slider', 'aria-label': key === 'mouth' ? 'Mouth: drag it onto the middle of the mouth' : `${key === 'eyeL' ? 'Left' : 'Right'} eye: drag it onto the eye`, tabIndex: 0 }));
+  const adjustBar = el('div', { className: 'lc-adjust hidden' },
+    el('span', { textContent: 'Drag the circles onto the eyes and the mouth.' }),
+    el('span', { className: 'lc-adjust-buttons' },
+      el('button', { type: 'button', className: 'lc-btn', textContent: 'Find again', title: 'Let me look for the face again', onclick: () => findAgain() }),
+      el('button', { type: 'button', className: 'lc-btn', textContent: 'Cancel', onclick: () => endAdjust(false) }),
+      el('button', { type: 'button', className: 'lc-btn lc-done', textContent: 'Done', onclick: () => endAdjust(true) })));
+  const stage = el('div', { className: 'lc-stage' }, canvas, ...marks);
+  const body = el('div', { className: 'lc-body' }, stage, adjustBar, heard, said, chips, form, settings, file);
   const root = el('aside', { className: 'lc-char', 'aria-label': `${cfg.name}, your assistant` }, head, body);
   parent.append(root);
 
@@ -73,6 +84,8 @@ export async function mountCharacter({ handle = async () => null, help = HELP_TE
   async function usePlaceholder(saveIt) {
     const p = placeholderFace();
     await puppet.setPhoto(p.image, p.landmarks);
+    adjustBtn.disabled = true;
+    adjustBtn.title = 'Choose a photo first; the drawn face is already in place';
     if (saveIt) {
       cfg.image = null;
       cfg.landmarks = null;
@@ -143,6 +156,9 @@ export async function mountCharacter({ handle = async () => null, help = HELP_TE
       case 'help': return help;
       case 'greet': return `Hello! I'm ${cfg.name}. ${greeting ?? 'Say help to hear what I can do.'}`;
       case 'thanks': return "You're welcome.";
+      case 'adjust':
+        startAdjust();
+        return cfg.image ? 'Drag the circles onto my eyes and mouth, then press Done.' : null;
       case 'quiet':
         Voice.cancel();
         quiet = false;
@@ -241,8 +257,103 @@ export async function mountCharacter({ handle = async () => null, help = HELP_TE
     cfg.image = image;
     cfg.landmarks = landmarks;
     save();
+    adjustBtn.disabled = false;
+    adjustBtn.title = 'Drag circles onto the eyes and mouth in your photo';
     settings.classList.add('hidden');
-    say(landmarks.source === 'facedetector' ? 'That looks like me.' : 'I guessed where your eyes and mouth are. If the mouth moves in the wrong place, try a straight-on photo.');
+    if (landmarks.source === 'facedetector') say('That looks like me. If the eyes or mouth are in the wrong place, choose Adjust eyes and mouth.');
+    else {
+      // a guess: show where it is, so the eyes and mouth can be put right straight away
+      startAdjust();
+      say('I guessed where your eyes and mouth are. Drag the circles onto them, then press Done.');
+    }
+  });
+
+  // ---------- adjusting the eyes and mouth by hand ----------
+  let draft = null; // the places being dragged, in the photo's pixels
+  let before = null;
+  function placeMarks() {
+    if (!draft) return;
+    marks.forEach((m, i) => {
+      const [x, y] = puppet.toScreen(draft[['eyeL', 'eyeR', 'mouth'][i]]);
+      m.style.left = `${x}px`;
+      m.style.top = `${y}px`;
+    });
+  }
+  function startAdjust() {
+    if (!cfg.image) return say('Choose a photo first. The drawn face already has its eyes and mouth in place.');
+    if (cfg.minimised) setMinimised(false);
+    settings.classList.add('hidden');
+    before = structuredClone(puppet.landmarks);
+    draft = structuredClone(puppet.landmarks);
+    root.classList.add('adjusting');
+    puppet.startAdjust();
+    adjustBar.classList.remove('hidden');
+    marks.forEach((m) => m.classList.remove('hidden'));
+    // the face is framed on the next frame (the canvas is taller while adjusting)
+    requestAnimationFrame(() => requestAnimationFrame(placeMarks));
+    marks[0].focus({ preventScroll: true });
+  }
+  async function findAgain() {
+    const found = await puppet.setPhoto(cfg.image);
+    draft = structuredClone(found);
+    puppet.startAdjust();
+    requestAnimationFrame(() => requestAnimationFrame(placeMarks));
+  }
+  function endAdjust(keep) {
+    if (!draft) return;
+    if (keep) {
+      // the left eye is the one further left; the mouth's width follows the eyes, as in retromr
+      if (draft.eyeL[0] > draft.eyeR[0]) [draft.eyeL, draft.eyeR] = [draft.eyeR, draft.eyeL];
+      delete draft.chin;
+      draft.mouthW = 0.9 * Math.hypot(draft.eyeR[0] - draft.eyeL[0], draft.eyeR[1] - draft.eyeL[1]);
+      draft.source = 'adjusted';
+      puppet.setLandmarks(draft);
+      cfg.landmarks = draft;
+      save();
+    } else if (before) puppet.setLandmarks(before);
+    draft = null;
+    before = null;
+    puppet.endAdjust();
+    root.classList.remove('adjusting');
+    adjustBar.classList.add('hidden');
+    marks.forEach((m) => m.classList.add('hidden'));
+    if (keep) say('Thanks, that looks more like me.');
+  }
+  marks.forEach((m, i) => {
+    const key = ['eyeL', 'eyeR', 'mouth'][i];
+    m.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      m.setPointerCapture(e.pointerId);
+      const box = stage.getBoundingClientRect();
+      const move = (ev) => {
+        const x = Math.max(0, Math.min(box.width, ev.clientX - box.left));
+        const y = Math.max(0, Math.min(box.height, ev.clientY - box.top));
+        m.style.left = `${x}px`;
+        m.style.top = `${y}px`;
+        draft[key] = puppet.toImage([x, y]);
+      };
+      const up = () => {
+        m.removeEventListener('pointermove', move);
+        m.removeEventListener('pointerup', up);
+        m.removeEventListener('pointercancel', up);
+      };
+      m.addEventListener('pointermove', move);
+      m.addEventListener('pointerup', up);
+      m.addEventListener('pointercancel', up);
+    });
+    // arrow keys nudge a marker (Shift for bigger steps); Enter is Done, Escape is Cancel
+    m.addEventListener('keydown', (e) => {
+      const step = e.shiftKey ? 10 : 2;
+      const d = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] }[e.key];
+      if (d) {
+        e.preventDefault();
+        const [x, y] = puppet.toScreen(draft[key]);
+        draft[key] = puppet.toImage([x + d[0], y + d[1]]);
+        placeMarks();
+      } else if (e.key === 'Enter') { e.preventDefault(); endAdjust(true); }
+      else if (e.key === 'Escape') { e.preventDefault(); endAdjust(false); }
+    });
   });
 
   // ---------- minimise and move ----------
@@ -290,6 +401,7 @@ export async function mountCharacter({ handle = async () => null, help = HELP_TE
     hear,
     root,
     minimise: () => setMinimised(true),
+    adjust: () => startAdjust(),
     show: () => setMinimised(false),
     destroy: () => { setListening(false); puppet.destroy(); root.remove(); }
   };

@@ -45,6 +45,7 @@ export function parseCommand(raw) {
   if (/^(help|what can you do|what can i say|commands)$/.test(lower)) return { intent: 'help' };
   if (/^(hello|hi|hey|good (morning|afternoon|evening)|g'day)\b/.test(lower)) return { intent: 'greet' };
   if (/^(thanks|thank you|cheers)\b/.test(lower)) return { intent: 'thanks' };
+  if (/^(adjust|fix|move|place|set|change)( (my|your|the))? (face|eyes( and (the )?mouth)?|mouth( and (the )?eyes)?|eyes and mouth)( (positions?|places?))?$/.test(lower)) return { intent: 'adjust' };
   if (/^(stop|be quiet|quiet|shush|stop talking)$/.test(lower)) return { intent: 'quiet' };
   if (/^(what('s| is) the (time|date)|what time is it|what day is it)$/.test(lower)) return { intent: 'time' };
   if (/^(what('s| is) (here|in (this|the) folder)|list( the)? files|show( me)? the files|where am i)$/.test(lower)) return { intent: 'list' };
@@ -114,4 +115,4 @@ export function bestMatch(spoken, candidates) {
   return best;
 }
 
-export const HELP_TEXT = 'You can say: go to a folder, go up, go home, open a file or app, run a script, find something, what is two plus two, what time is it, what\'s here, comment on a file, grammar logic on a topic, run today\'s workflows, or play today\'s music.';
+export const HELP_TEXT = 'You can say: go to a folder, go up, go home, open a file or app, run a script, find something, what is two plus two, what time is it, what\'s here, comment on a file, grammar logic on a topic, run today\'s workflows, or play today\'s music. To put my eyes and mouth in the right places on your photo, say adjust my face.';

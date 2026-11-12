@@ -22,6 +22,20 @@
 .lc-settings label { display: grid; grid-template-columns: 54px 1fr; align-items: center; gap: 6px; font-size: 13px; }
 .lc-settings input[type='text'], .lc-settings select { min-height: 30px; border-radius: 6px; border: 0; padding: 0 6px; background: rgb(255 255 255 / 85%); color: #111; font: inherit; min-width: 0; }
 .lc-note { margin: 0; font-size: 11.5px; color: #9d978b; }
+/* adjusting the eyes and mouth: markers over the face */
+.lc-stage { position: relative; }
+.lc-char.adjusting { width: min(340px, calc(100vw - 24px)); }
+.lc-char.adjusting .lc-face { height: 340px; }
+.lc-mark { position: absolute; width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 50%; border: 3px solid #ffd68c; background: rgb(255 214 140 / 18%); cursor: grab; touch-action: none; box-sizing: border-box; }
+.lc-mark:active { cursor: grabbing; }
+.lc-mark:focus-visible { outline: 2px solid #7ff0d8; outline-offset: 2px; }
+.lc-mark.mouth { width: 60px; height: 26px; margin: -13px 0 0 -30px; border-radius: 13px; }
+@media (pointer: coarse) { .lc-mark.eye { width: 44px; height: 44px; margin: -22px 0 0 -22px; } .lc-mark.mouth { width: 70px; height: 34px; margin: -17px 0 0 -35px; border-radius: 17px; } }
+.lc-adjust { display: grid; gap: 6px; font-size: 13px; color: #e8e2d5; }
+.lc-adjust-buttons { display: flex; gap: 6px; justify-content: flex-end; }
+.lc-adjust .lc-btn { padding: 0 10px; font-size: 13px; }
+.lc-adjust .lc-done { background: #1f8f7a; }
+.lc-char.adjusting .lc-chips, .lc-char.adjusting .lc-heard, .lc-char.adjusting .lc-form { display: none; }
 /* minimised: just the face in a circle */
 .lc-char.min { width: 84px; border-radius: 50%; }
 .lc-char.min .lc-head { position: absolute; inset: auto 0 0 0; justify-content: center; padding: 0; background: transparent; opacity: 0; }
